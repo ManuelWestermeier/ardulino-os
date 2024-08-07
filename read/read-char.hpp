@@ -7,7 +7,7 @@ char ReadChar(DrawKeyBoardMetaData* drawKeyBoardMetaData) {
 
   //characters
   if (cursorPos.y == 1 || cursorPos.y == 2) {
-    char currentChar = keyBoardLayout[cursorPos.y - 1].charAt(cursorPos.x);
+    char currentChar = keyBoardLayout[cursorPos.y - 1][cursorPos.x];
     return currentCharUpperCase ? toupper(currentChar) : currentChar;
   }
 
