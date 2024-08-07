@@ -2,7 +2,7 @@
 #include "./globals.hpp"
 #include "./data.hpp"
 #include "./cursor.hpp"
-#include "./read.hpp"
+#include "./read/index.hpp"
 
 void setup() {
   lcd.init();
