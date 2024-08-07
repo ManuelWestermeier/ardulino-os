@@ -1,23 +1,36 @@
-String* ReadString(DrawKeyBoardMetaData drawKeyBoardMetaData) {
+String *ReadString(DrawKeyBoardMetaData drawKeyBoardMetaData)
+{
   lcd.clear();
   char out;
 
-  while (true) {
+  while (true)
+  {
     out = ReadChar(&drawKeyBoardMetaData);
 
-    if (isascii(out)) {
+    if (isascii(out))
+    {
       *drawKeyBoardMetaData.prompt = drawKeyBoardMetaData.prompt->substring(0, drawKeyBoardMetaData.writePos) + out + drawKeyBoardMetaData.prompt->substring(drawKeyBoardMetaData.writePos);
       drawKeyBoardMetaData.writePos++;
-    } else if (out == GET_CHAR_LEFT_SHIFT && drawKeyBoardMetaData.writePos > 0) {
+    }
+    else if (out == GET_CHAR_LEFT_SHIFT && drawKeyBoardMetaData.writePos > 0)
+    {
       drawKeyBoardMetaData.writePos--;
-    } else if (out == GET_CHAR_RIGHT_SHIFT && drawKeyBoardMetaData.writePos < drawKeyBoardMetaData.prompt->length()) {
+    }
+    else if (out == GET_CHAR_RIGHT_SHIFT && drawKeyBoardMetaData.writePos < drawKeyBoardMetaData.prompt->length())
+    {
       drawKeyBoardMetaData.writePos++;
-    } else if (out == GET_CHAR_BACKSPACE) {
+    }
+    else if (out == GET_CHAR_BACKSPACE)
+    {
       drawKeyBoardMetaData.prompt->remove(drawKeyBoardMetaData.writePos - 1, 1);
       drawKeyBoardMetaData.writePos--;
-    } else if (out == GET_CHAR_SUBMIT) {
+    }
+    else if (out == GET_CHAR_SUBMIT)
+    {
       break;
-    } else if (out == GET_CHAR_DELETE_ALL) {
+    }
+    else if (out == GET_CHAR_DELETE_ALL)
+    {
       drawKeyBoardMetaData.writePos = 0;
       *drawKeyBoardMetaData.prompt = "";
     }

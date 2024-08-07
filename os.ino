@@ -4,7 +4,8 @@
 #include "./cursor.hpp"
 #include "./read/index.hpp"
 
-void setup() {
+void setup()
+{
   lcd.init();
   lcd.backlight();
 
@@ -18,9 +19,10 @@ void setup() {
 
 String x;
 
-void loop() {
+void loop()
+{
   String prompt = "Hello World ... Long String Overflow 0128282828";
-  DrawKeyBoardMetaData drawKeyBoardMetaData = { prompt.length(), &prompt };
+  DrawKeyBoardMetaData drawKeyBoardMetaData = {prompt.length(), &prompt};
 
   lcd.print(*ReadString(drawKeyBoardMetaData));
 

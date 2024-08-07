@@ -1,11 +1,13 @@
 #include <EEPROM.h>
 
-void writeIntIntoEEPROM(int address, int number) {
+void writeIntIntoEEPROM(int address, int number)
+{
   EEPROM.write(address, number >> 8);
   EEPROM.write(address + 1, number & 0xFF);
 }
 
-int readIntFromEEPROM(int address) {
+int readIntFromEEPROM(int address)
+{
   byte byte1 = EEPROM.read(address);
   byte byte2 = EEPROM.read(address + 1);
 
