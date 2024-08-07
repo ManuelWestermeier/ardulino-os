@@ -1,10 +1,11 @@
+#include <ctype.h>
 String keyBoardLayout[2] = {
   "abcdefghij0123456789",
   "klmnopqrstuvwxyz .?!"
 };
 
 struct DrawKeyBoardMetaData {
-  int writePos;
+  unsigned int writePos;
   String* prompt;
 };
 
@@ -102,6 +103,8 @@ void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData* drawKeyBoardMetaData) {
 char ReadChar(DrawKeyBoardMetaData* drawKeyBoardMetaData) {
   Pos cursorPos = cursor.Get<DrawKeyBoardMetaData*>(DrawKeyBoard, drawKeyBoardMetaData);
 
+  while (digitalRead(swPin) == LOW);
+
   //characters
   if (cursorPos.y == 1 || cursorPos.y == 2) {
     char currentChar = keyBoardLayout[cursorPos.y - 1].charAt(cursorPos.x);
@@ -148,16 +151,34 @@ String* ReadString(DrawKeyBoardMetaData drawKeyBoardMetaData) {
       drawKeyBoardMetaData.writePos--;
     } else if (out == GET_CHAR_RIGHT_SHIFT && drawKeyBoardMetaData.writePos < drawKeyBoardMetaData.prompt->length()) {
       drawKeyBoardMetaData.writePos++;
+    } else if (out == GET_CHAR_BACKSPACE) {
+      drawKeyBoardMetaData.prompt->remove(drawKeyBoardMetaData.writePos - 1, 1);
+      drawKeyBoardMetaData.writePos--;
     } else if (out == GET_CHAR_SUBMIT) {
       break;
-    } else {
+    } else if (isascii(out)) {
       *drawKeyBoardMetaData.prompt = drawKeyBoardMetaData.prompt->substring(0, drawKeyBoardMetaData.writePos) + out + drawKeyBoardMetaData.prompt->substring(drawKeyBoardMetaData.writePos);
       drawKeyBoardMetaData.writePos++;
     };
 
     delay(RENDERING_FRAME);
+
+    // delay(RENDERING_FRAME * 10);
+
+    // lcd.clear();
+    // lcd.home();
+    // lcd.print(drawKeyBoardMetaData.writePos);
+
+    // delay(RENDERING_FRAME * 10);
+    // lcd.clear();
   }
 
+  delay(RENDERING_FRAME * 10);
+  lcd.clear();
+
+  lcd.print(drawKeyBoardMetaData.prompt->c_str());
+
+  delay(RENDERING_FRAME * 10);
   lcd.clear();
 
   return drawKeyBoardMetaData.prompt;

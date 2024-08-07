@@ -20,7 +20,7 @@ String x;
 
 void loop() {
   String prompt = "Hello World ... Long String Overflow 0128282828";
-  DrawKeyBoardMetaData drawKeyBoardMetaData = { 0, &prompt };
+  DrawKeyBoardMetaData drawKeyBoardMetaData = { prompt.length(), &prompt };
 
   lcd.print(*ReadString(drawKeyBoardMetaData));
 
