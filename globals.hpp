@@ -22,6 +22,7 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 #define GET_CHAR_RIGHT_SHIFT 2
 #define GET_CHAR_SUBMIT 3
 #define GET_CHAR_BACKSPACE 4
+#define GET_CHAR_DELETE_ALL 5
 
 uint8_t cursorChar[2][8] = {
   {

@@ -67,22 +67,39 @@ void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData* drawKeyBoardMetaData) {
   //clear last row
   for (int i = 1; i < 19; i++) {
     if (!cursorPos.collidesWith({ i, 3 })) {
-      lcd.setCursor(i, 3);
-      lcd.write(' ');
+      if (i < 13) {
+        lcd.setCursor(i, 3);
+        lcd.write(' ');
+      } else if (i % 2 == 0) {
+        lcd.setCursor(i, 3);
+        lcd.write(' ');
+      }
     }
   }
 
-  //Uppercase and Lowercase
-  lcd.setCursor(15, 3);
-  lcd.write('x');
+  //Delete All
+  if (!cursorPos.collidesWith({ 13, 3 })) {
+    lcd.setCursor(13, 3);
+    lcd.write('X');
+  }
+
+  //Delete Char
+  if (!cursorPos.collidesWith({ 15, 3 })) {
+    lcd.setCursor(15, 3);
+    lcd.write('x');
+  }
 
   //Uppercase and Lowercase
-  lcd.setCursor(17, 3);
-  lcd.write(currentCharUpperCase ? 'a' : 'A');
+  if (!cursorPos.collidesWith({ 17, 3 })) {
+    lcd.setCursor(17, 3);
+    lcd.write(currentCharUpperCase ? 'a' : 'A');
+  }
 
   //confirm
-  lcd.setCursor(19, 3);
-  lcd.write(confirm_charcode);
+  if (!cursorPos.collidesWith({ 19, 3 })) {
+    lcd.setCursor(19, 3);
+    lcd.write(confirm_charcode);
+  }
 
   //selected
   lcd.setCursor(0, 3);
@@ -91,6 +108,8 @@ void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData* drawKeyBoardMetaData) {
     lcd.write(currentCharUpperCase ? toupper(keyBoardLayout[cursorPos.y - 1].charAt(cursorPos.x)) : keyBoardLayout[cursorPos.y - 1].charAt(cursorPos.x));
   } else if (cursorPos.y == 0) {
     lcd.write(cursorPos.x == 0 ? '<' : (cursorPos.x == 19 ? '>' : '-'));
+  } else if (cursorPos.collidesWith({ 13, 3 })) {
+    lcd.write('X');
   } else if (cursorPos.collidesWith({ 15, 3 })) {
     lcd.write('x');
   } else if (cursorPos.collidesWith({ 17, 3 })) {
@@ -103,7 +122,9 @@ void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData* drawKeyBoardMetaData) {
 char ReadChar(DrawKeyBoardMetaData* drawKeyBoardMetaData) {
   Pos cursorPos = cursor.Get<DrawKeyBoardMetaData*>(DrawKeyBoard, drawKeyBoardMetaData);
 
-  while (digitalRead(swPin) == LOW);
+  // wait for key up
+  while (digitalRead(swPin) == LOW)
+    ;
 
   //characters
   if (cursorPos.y == 1 || cursorPos.y == 2) {
@@ -137,6 +158,9 @@ char ReadChar(DrawKeyBoardMetaData* drawKeyBoardMetaData) {
   //submit
   if (cursorPos.collidesWith({ 19, 3 })) return GET_CHAR_SUBMIT;
 
+  //delete all
+  if (cursorPos.collidesWith({ 13, 3 })) return GET_CHAR_DELETE_ALL;
+
   return ReadChar(drawKeyBoardMetaData);
 }
 
@@ -147,7 +171,10 @@ String* ReadString(DrawKeyBoardMetaData drawKeyBoardMetaData) {
   while (true) {
     out = ReadChar(&drawKeyBoardMetaData);
 
-    if (out == GET_CHAR_LEFT_SHIFT && drawKeyBoardMetaData.writePos > 0) {
+    if (isascii(out)) {
+      *drawKeyBoardMetaData.prompt = drawKeyBoardMetaData.prompt->substring(0, drawKeyBoardMetaData.writePos) + out + drawKeyBoardMetaData.prompt->substring(drawKeyBoardMetaData.writePos);
+      drawKeyBoardMetaData.writePos++;
+    } else if (out == GET_CHAR_LEFT_SHIFT && drawKeyBoardMetaData.writePos > 0) {
       drawKeyBoardMetaData.writePos--;
     } else if (out == GET_CHAR_RIGHT_SHIFT && drawKeyBoardMetaData.writePos < drawKeyBoardMetaData.prompt->length()) {
       drawKeyBoardMetaData.writePos++;
@@ -156,10 +183,10 @@ String* ReadString(DrawKeyBoardMetaData drawKeyBoardMetaData) {
       drawKeyBoardMetaData.writePos--;
     } else if (out == GET_CHAR_SUBMIT) {
       break;
-    } else if (isascii(out)) {
-      *drawKeyBoardMetaData.prompt = drawKeyBoardMetaData.prompt->substring(0, drawKeyBoardMetaData.writePos) + out + drawKeyBoardMetaData.prompt->substring(drawKeyBoardMetaData.writePos);
-      drawKeyBoardMetaData.writePos++;
-    };
+    } else if (out == GET_CHAR_DELETE_ALL) {
+      drawKeyBoardMetaData.writePos = 0;
+      *drawKeyBoardMetaData.prompt = "";
+    }
 
     delay(RENDERING_FRAME);
 
