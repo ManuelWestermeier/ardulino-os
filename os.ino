@@ -15,6 +15,8 @@ void setup()
   pinMode(swPin, INPUT_PULLUP);
   pinMode(buttonPin, INPUT_PULLUP);
   pinMode(ledPin, OUTPUT);
+
+  digitalWrite(LED_BUILTIN, LOW);
 }
 
 String x;
@@ -22,7 +24,7 @@ String x;
 void loop()
 {
   String prompt = "Hello World ... Long String Overflow 0128282828";
-  DrawKeyBoardMetaData drawKeyBoardMetaData = {prompt.length(), &prompt};
+  DrawKeyBoardMetaData drawKeyBoardMetaData = {0, &prompt};
 
   lcd.print(*ReadString(drawKeyBoardMetaData));
 

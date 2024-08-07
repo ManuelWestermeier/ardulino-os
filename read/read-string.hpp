@@ -7,12 +7,7 @@ String *ReadString(DrawKeyBoardMetaData drawKeyBoardMetaData)
   {
     out = ReadChar(&drawKeyBoardMetaData);
 
-    if (isascii(out))
-    {
-      *drawKeyBoardMetaData.prompt = drawKeyBoardMetaData.prompt->substring(0, drawKeyBoardMetaData.writePos) + out + drawKeyBoardMetaData.prompt->substring(drawKeyBoardMetaData.writePos);
-      drawKeyBoardMetaData.writePos++;
-    }
-    else if (out == GET_CHAR_LEFT_SHIFT && drawKeyBoardMetaData.writePos > 0)
+    if (out == GET_CHAR_LEFT_SHIFT && drawKeyBoardMetaData.writePos > 0)
     {
       drawKeyBoardMetaData.writePos--;
     }
@@ -31,9 +26,14 @@ String *ReadString(DrawKeyBoardMetaData drawKeyBoardMetaData)
     }
     else if (out == GET_CHAR_DELETE_ALL)
     {
-      drawKeyBoardMetaData.writePos = 0;
       *drawKeyBoardMetaData.prompt = "";
+      drawKeyBoardMetaData.writePos = 0;
     }
+    else if (isascii(out))
+    {
+      *drawKeyBoardMetaData.prompt = drawKeyBoardMetaData.prompt->substring(0, drawKeyBoardMetaData.writePos) + out + drawKeyBoardMetaData.prompt->substring(drawKeyBoardMetaData.writePos);
+      drawKeyBoardMetaData.writePos++;
+    };
 
     delay(RENDERING_FRAME);
 

@@ -71,61 +71,37 @@ void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData *drawKeyBoardMetaData)
   {
     if (!cursorPos.collidesWith({i, 3}))
     {
-      if (i < 13)
-      {
-        lcd.setCursor(i, 3);
-        lcd.write(' ');
-      }
-      else if (i % 2 == 0)
-      {
-        lcd.setCursor(i, 3);
-        lcd.write(' ');
-      }
+      lcd.setCursor(i, 3);
+      lcd.write(' ');
     }
   }
 
-  // Delete All
-  if (!cursorPos.collidesWith({13, 3}))
-  {
-    lcd.setCursor(13, 3);
-    lcd.write('X');
-  }
-
-  // Delete Char
-  if (!cursorPos.collidesWith({15, 3}))
-  {
-    lcd.setCursor(15, 3);
-    lcd.write('x');
-  }
+  // Delete all
+  lcd.setCursor(13, 3);
+  lcd.write('X');
 
   // Uppercase and Lowercase
-  if (!cursorPos.collidesWith({17, 3}))
-  {
-    lcd.setCursor(17, 3);
-    lcd.write(currentCharUpperCase ? 'a' : 'A');
-  }
+  lcd.setCursor(15, 3);
+  lcd.write('x');
+
+  // Uppercase and Lowercase
+  lcd.setCursor(17, 3);
+  lcd.write(currentCharUpperCase ? 'a' : 'A');
 
   // confirm
-  if (!cursorPos.collidesWith({19, 3}))
-  {
-    lcd.setCursor(19, 3);
-    lcd.write(confirm_charcode);
-  }
+  lcd.setCursor(19, 3);
+  lcd.write(confirm_charcode);
 
   // selected
   lcd.setCursor(0, 3);
   if (cursorPos.y == 1 || cursorPos.y == 2)
   {
     lcd.setCursor(0, 3);
-    lcd.write(currentCharUpperCase ? toupper(keyBoardLayout[cursorPos.y - 1][cursorPos.x]) : keyBoardLayout[cursorPos.y - 1][cursorPos.x]);
+    lcd.write(currentCharUpperCase ? toupper(keyBoardLayout[cursorPos.y - 1].charAt(cursorPos.x)) : keyBoardLayout[cursorPos.y - 1].charAt(cursorPos.x));
   }
   else if (cursorPos.y == 0)
   {
     lcd.write(cursorPos.x == 0 ? '<' : (cursorPos.x == 19 ? '>' : '-'));
-  }
-  else if (cursorPos.collidesWith({13, 3}))
-  {
-    lcd.write('X');
   }
   else if (cursorPos.collidesWith({15, 3}))
   {
