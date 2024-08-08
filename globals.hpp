@@ -24,6 +24,9 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 #define GET_CHAR_BACKSPACE 4
 #define GET_CHAR_DELETE_ALL 5
 
+char appScreenData[19][3];
+char appTitel[16];
+
 uint8_t cursorChar[2][8] = {
     {
         B00000,
