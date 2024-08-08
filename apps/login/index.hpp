@@ -1,4 +1,4 @@
-namespace BrowserApp
+namespace LoginApp
 {
     String state;
 

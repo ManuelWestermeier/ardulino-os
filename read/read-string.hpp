@@ -36,15 +36,6 @@ String *ReadString(DrawKeyBoardMetaData drawKeyBoardMetaData)
     };
 
     delay(RENDERING_FRAME);
-
-    // delay(RENDERING_FRAME * 10);
-
-    // lcd.clear();
-    // lcd.home();
-    // lcd.print(drawKeyBoardMetaData.writePos);
-
-    // delay(RENDERING_FRAME * 10);
-    // lcd.clear();
   }
 
   lcd.clear();

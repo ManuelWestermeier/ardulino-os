@@ -48,7 +48,7 @@ void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData *drawKeyBoardMetaData)
   if (!cursorPos.collidesWith({5, 0}))
   {
     lcd.setCursor(5, 0);
-    lcd.write(cursor.cursorFrameState ? 'I' : '|');
+    lcd.write(Cursor::cursorFrameState ? 'I' : '|');
   }
 
   // draw alphabetics layout

@@ -27,6 +27,8 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 char appScreenData[19][3];
 char appTitel[16];
 
+bool isLoggedIn = false;
+
 uint8_t cursorChar[2][8] = {
     {
         B00000,
@@ -59,3 +61,17 @@ uint8_t confirmChar[8] = {
     B01100,
     B00000,
 };
+
+String keyBoardLayout[2] = {
+    "abcdefghij0123456789",
+    "klmnopqrstuvwxyz .?!"};
+
+void InitData()
+{
+    for (int i = 0; i < 16; i++)
+        appTitel[i] = ' ';
+
+    for (int y = 0; y < 3; y++)
+        for (int x = 0; x < 19; x++)
+            appScreenData[x][y] = ' ';
+}

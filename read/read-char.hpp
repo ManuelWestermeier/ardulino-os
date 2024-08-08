@@ -1,6 +1,6 @@
 char ReadChar(DrawKeyBoardMetaData *drawKeyBoardMetaData)
 {
-  Pos cursorPos = cursor.Get<DrawKeyBoardMetaData *>(DrawKeyBoard, drawKeyBoardMetaData);
+  Pos cursorPos = Cursor::Get<DrawKeyBoardMetaData *>(DrawKeyBoard, drawKeyBoardMetaData);
 
   digitalWrite(LED_BUILTIN, HIGH);
   while (digitalRead(swPin) == LOW)

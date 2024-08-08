@@ -1,18 +1,25 @@
-struct Cursor
+namespace Cursor
 {
   Pos pos = {10, 2};
 
-  template <typename BypassedType>
-  Pos Get(void (*bevorUpdate)(Pos, BypassedType), BypassedType bypassed)
+  int last = 3;
+  bool cursorFrameState = 0;
+
+  void UpdateCursorFrameState()
   {
-    static int round = 0;
-    while (digitalRead(swPin) != LOW)
+    if (last-- == 0)
     {
-      bevorUpdate(pos, bypassed);
-      Update();
-      delay(RENDERING_FRAME);
+      cursorFrameState = !cursorFrameState;
+      lcd.createChar(cursor_charcode, cursorChar[cursorFrameState]);
+      last = 3;
     }
-    return pos;
+  }
+
+  void Draw()
+  {
+    UpdateCursorFrameState();
+    lcd.setCursor(pos.x, pos.y);
+    lcd.write(0);
   }
 
   Update()
@@ -36,25 +43,16 @@ struct Cursor
     Draw();
   }
 
-  int last = 3;
-  bool cursorFrameState = 0;
-
-  void UpdateCursorFrameState()
+  template <typename BypassedType>
+  Pos Get(void (*bevorUpdate)(Pos, BypassedType), BypassedType bypassed)
   {
-    if (last-- == 0)
+    static int round = 0;
+    while (digitalRead(swPin) != LOW)
     {
-      cursorFrameState = !cursorFrameState;
-      lcd.createChar(cursor_charcode, cursorChar[cursorFrameState]);
-      last = 3;
+      bevorUpdate(pos, bypassed);
+      Update();
+      delay(RENDERING_FRAME);
     }
-  }
-
-  void Draw()
-  {
-    UpdateCursorFrameState();
-    lcd.setCursor(pos.x, pos.y);
-    lcd.write(0);
+    return pos;
   }
 };
-
-Cursor cursor;

@@ -1,13 +1,13 @@
-namespace BrowserApp
+namespace HomeApp
 {
     String state;
 
     void Update()
     {
     }
-
+    
     void ScrollUp();
     void ScrollDown();
-    void OnExit();
     void OnClick();
+    void OnExit();
 };
