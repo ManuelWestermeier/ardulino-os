@@ -47,7 +47,6 @@ String *ReadString(DrawKeyBoardMetaData drawKeyBoardMetaData)
     // lcd.clear();
   }
 
-  delay(RENDERING_FRAME * 10);
   lcd.clear();
 
   lcd.print(drawKeyBoardMetaData.prompt->c_str());

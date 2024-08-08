@@ -19,15 +19,6 @@ void setup()
   digitalWrite(LED_BUILTIN, LOW);
 }
 
-String x;
-
 void loop()
 {
-  String prompt = "Hello World ... Long String Overflow 0128282828";
-  DrawKeyBoardMetaData drawKeyBoardMetaData = {0, &prompt};
-
-  lcd.print(*ReadString(drawKeyBoardMetaData));
-
-  delay(RENDERING_FRAME * 100);
-  lcd.clear();
 }
