@@ -4,6 +4,7 @@ namespace LoginApp
 
     void Update()
     {
+        SetAppTitle("login", 5);
     }
 
     void ScrollUp();

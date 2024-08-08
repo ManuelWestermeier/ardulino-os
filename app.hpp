@@ -32,7 +32,7 @@ namespace AppRender
             if (!Cursor::pos.collidesWith({i, 0}))
             {
                 lcd.setCursor(i, 0);
-                lcd.write(appTitel[i]);
+                lcd.write(appTitle[i]);
             }
         }
         if (!(Cursor::pos.y == 0 && Cursor::pos.x > 16 && Cursor::pos.x < 20))

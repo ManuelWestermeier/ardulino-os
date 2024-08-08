@@ -38,7 +38,18 @@ String keyBoardLayout[2] = {
 // app
 
 char appScreenData[19][3];
-char appTitel[16];
+char appTitle[16];
+
+void SetAppTitle(char *title, int length)
+{
+    for (int i = 0; i < 16; i++)
+    {
+        if (i < length)
+            appTitle[i] = title[i];
+        else
+            appTitle[i] = ' ';
+    }
+}
 
 // auth
 
@@ -82,7 +93,7 @@ uint8_t confirmChar[8] = {
 void InitData()
 {
     for (int i = 0; i < 16; i++)
-        appTitel[i] = ' ';
+        appTitle[i] = ' ';
 
     for (int y = 0; y < 3; y++)
         for (int x = 0; x < 19; x++)
