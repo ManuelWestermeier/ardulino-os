@@ -11,5 +11,6 @@ namespace utils
         while (digitalRead(swPin) == LOW)
             ;
         digitalWrite(LED_BUILTIN, LOW);
+        lcd.clear();
     }
 };

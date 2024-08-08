@@ -2,18 +2,18 @@ namespace auth
 {
     bool accountExists()
     {
-        return EEPROM.read(0) == 1;
+        return EEPROM.read(HAS_ACCOUNT_ADRESS) == 1;
     }
 
     String *getPassword()
     {
-        return strings::readStoredString(1, 6);
+        return strings::readStoredString(PASSWORD_ADRESS, 6);
     }
 
     void createAccount(String *password)
     {
-        strings::storeString(1, password, 6);
-        EEPROM.write(0, 1);
+        strings::storeString(PASSWORD_ADRESS, password, 6);
+        EEPROM.write(HAS_ACCOUNT_ADRESS, 1);
         isLoggedIn = true;
     }
 

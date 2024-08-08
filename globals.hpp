@@ -13,6 +13,8 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 // LED pin
 #define ledPin 9
 
+// input
+
 #define cursor_charcode 0
 #define confirm_charcode 1
 #define RENDERING_FRAME 100
@@ -24,10 +26,25 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 #define GET_CHAR_BACKSPACE 4
 #define GET_CHAR_DELETE_ALL 5
 
+String keyBoardLayout[2] = {
+    "abcdefghij0123456789",
+    "klmnopqrstuvwxyz .?!"};
+
+// storage
+
+#define HAS_ACCOUNT_ADRESS 0
+#define PASSWORD_ADRESS 1
+
+// app
+
 char appScreenData[19][3];
 char appTitel[16];
 
+// auth
+
 bool isLoggedIn = false;
+
+// custum characters
 
 uint8_t cursorChar[2][8] = {
     {
@@ -61,10 +78,6 @@ uint8_t confirmChar[8] = {
     B01100,
     B00000,
 };
-
-String keyBoardLayout[2] = {
-    "abcdefghij0123456789",
-    "klmnopqrstuvwxyz .?!"};
 
 void InitData()
 {
