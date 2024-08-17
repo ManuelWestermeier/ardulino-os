@@ -6,8 +6,7 @@ namespace BrowserApp
     {
     }
 
-    void ScrollUp();
-    void ScrollDown();
+    void Scroll(signed char direction);
     void OnExit();
-    void OnClick();
+    void OnClick(Pos clickPos);
 };

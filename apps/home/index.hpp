@@ -6,8 +6,7 @@ namespace HomeApp
     {
     }
     
-    void ScrollUp();
-    void ScrollDown();
-    void OnClick();
+    void Scroll(signed char direction);
     void OnExit();
+    void OnClick(Pos clickPos);
 };

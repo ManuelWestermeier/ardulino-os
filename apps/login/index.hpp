@@ -7,8 +7,6 @@ namespace LoginApp
         SetAppTitle("login", 5);
     }
 
-    void ScrollUp();
-    void ScrollDown();
-    void OnExit();
-    void OnClick();
+    void Scroll(signed char direction);
+    void OnClick(Pos clickPos);
 };
