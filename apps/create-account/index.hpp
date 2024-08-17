@@ -1,7 +1,8 @@
 namespace CreateAccountApp
 {
-    void Update()
+    void Create()
     {
+        CURSOR_OFFSET = 7;
         // create new account ui
         lcd.clear();
         lcd.setCursor(1, 0);
@@ -19,9 +20,8 @@ namespace CreateAccountApp
         lcd.setCursor(0, 2);
         lcd.print("(6 characters long)");
         utils::waitForRelease();
-        String prompt = "";
-        String *password = input::ReadString(DrawKeyBoardMetaData{0, &prompt});
-        if (password->length() != 6) // check length
+        String password = *input::ReadString(DrawKeyBoardMetaData{0, &String("")});
+        if (password.length() != 6) // check length
         {
             lcd.clear();
             lcd.setCursor(1, 1);
@@ -31,13 +31,14 @@ namespace CreateAccountApp
             goto getPassword;
         }
         // rewrite password
-        utils::waitForRelease();
         lcd.clear();
         lcd.setCursor(2, 1);
         lcd.print("rewrite password");
         utils::waitForRelease();
-        String *password2 = input::ReadString(DrawKeyBoardMetaData{0, &prompt});
-        if (*password != *password2) // if they arent the same retry
+        String password2 = *input::ReadString(DrawKeyBoardMetaData{0, &String("")});
+
+        // if they arent the same retry
+        if (password != password2)
         {
             lcd.clear();
             lcd.setCursor(1, 1);
@@ -46,6 +47,7 @@ namespace CreateAccountApp
             lcd.print("the same");
             goto getPassword;
         }
-        data::auth::createAccount(password);
+
+        data::auth::createAccount(&password);
     }
 };

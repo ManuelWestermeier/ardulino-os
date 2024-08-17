@@ -30,6 +30,8 @@ String keyBoardLayout[2] = {
     "abcdefghij0123456789",
     "klmnopqrstuvwxyz .?!"};
 
+int CURSOR_OFFSET = 15;
+
 // storage
 
 #define HAS_ACCOUNT_ADRESS 0

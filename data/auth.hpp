@@ -1,8 +1,10 @@
 namespace auth
 {
+#define IS_AUTH_BYTE 10
+
     bool accountExists()
     {
-        return EEPROM.read(HAS_ACCOUNT_ADRESS) == byte(10);
+        return EEPROM.read(HAS_ACCOUNT_ADRESS) == byte(IS_AUTH_BYTE);
     }
 
     String *getPassword()
@@ -13,7 +15,7 @@ namespace auth
     void createAccount(String *password)
     {
         strings::storeString(PASSWORD_ADRESS, password, 6);
-        EEPROM.write(HAS_ACCOUNT_ADRESS, byte(10));
+        EEPROM.write(HAS_ACCOUNT_ADRESS, byte(IS_AUTH_BYTE));
         isLoggedIn = true;
     }
 

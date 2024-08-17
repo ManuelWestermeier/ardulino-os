@@ -4,7 +4,7 @@ void Auth()
     {
         if (!data::auth::accountExists())
         {
-            CreateAccountApp::Update();
+            CreateAccountApp::Create();
         }
         else
         {

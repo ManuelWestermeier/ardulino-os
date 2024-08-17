@@ -17,9 +17,9 @@ void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData *drawKeyBoardMetaData)
 
   for (int i = 1; i < 18; i++)
   {
-    int writeCharindex = i - 5 + drawKeyBoardMetaData->writePos;
+    int writeCharindex = i - CURSOR_OFFSET + drawKeyBoardMetaData->writePos;
 
-    if (i < 5)
+    if (i < CURSOR_OFFSET)
     {
       if (!cursorPos.collidesWith({i, 0}))
       {
@@ -45,9 +45,9 @@ void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData *drawKeyBoardMetaData)
     }
   }
 
-  if (!cursorPos.collidesWith({5, 0}))
+  if (!cursorPos.collidesWith({CURSOR_OFFSET, 0}))
   {
-    lcd.setCursor(5, 0);
+    lcd.setCursor(CURSOR_OFFSET, 0);
     lcd.write(Cursor::cursorFrameState ? 'I' : '|');
   }
 
@@ -106,6 +106,10 @@ void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData *drawKeyBoardMetaData)
   else if (cursorPos.collidesWith({15, 3}))
   {
     lcd.write('x');
+  }
+  else if (cursorPos.collidesWith({13, 3}))
+  {
+    lcd.write('X');
   }
   else if (cursorPos.collidesWith({17, 3}))
   {

@@ -7,6 +7,6 @@ namespace LoginApp
         SetAppTitle("login", 5);
     }
 
-    void Scroll(signed char direction);
+    void Scroll(signed char direction) {}
     void OnClick(Pos clickPos);
 };

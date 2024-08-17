@@ -8,10 +8,6 @@ namespace AppRender
         {
             BrowserApp::Update();
         }
-        else if (appOpened == "create-account")
-        {
-            CreateAccountApp::Update();
-        }
         else if (appOpened == "login")
         {
             LoginApp::Update();
@@ -24,9 +20,20 @@ namespace AppRender
 
     void ExitCurrentApp()
     {
+        if (!isLoggedIn)
+        {
+            lcd.clear();
+            lcd.home();
+            lcd.print("Cant Exit App");
+            delay(2000);
+            lcd.clear();
+            return;
+        }
+
         if (appOpened == "browser")
         {
             BrowserApp::OnExit();
+            appOpened = "home";
         }
     }
 
@@ -34,15 +41,11 @@ namespace AppRender
     {
         if (appOpened == "browser")
         {
-            // BrowserApp::Scroll(direction);
+            BrowserApp::Scroll(direction);
         }
         else if (appOpened == "login")
         {
-            // LoginApp::Scroll(direction);
-        }
-        else
-        {
-            // HomeApp::Scroll(direction);
+            LoginApp::Scroll(direction);
         }
     }
 
@@ -77,6 +80,7 @@ namespace AppRender
     {
         UpdateCurrentApp();
 
+        // app title
         lcd.home();
         for (int i = 0; i < 16; i++)
         {
@@ -86,27 +90,32 @@ namespace AppRender
                 lcd.write(appTitle[i]);
             }
         }
+        // space aufter title
         if (!Cursor::pos.collidesWith({16, 0}))
         {
             lcd.setCursor(16, 0);
             lcd.write(' ');
         }
+        // draw hovered char
         if (!Cursor::pos.collidesWith({17, 0}))
         {
             lcd.setCursor(17, 0);
             lcd.write(GetCursorPosChar());
         }
+        // space after hovered char
         if (!Cursor::pos.collidesWith({18, 0}))
         {
             lcd.setCursor(18, 0);
             lcd.write(' ');
         }
+        // exit
         if (!Cursor::pos.collidesWith({19, 0}))
         {
             lcd.setCursor(19, 0);
             lcd.write('x');
         }
 
+        // app view
         for (int y = 0; y < 3; y++)
         {
             for (int x = 0; x < 19; x++)
@@ -118,6 +127,8 @@ namespace AppRender
                 }
             }
         }
+
+        // scrolls
         lcd.setCursor(19, 1);
         lcd.write(' ');
         lcd.setCursor(19, 2);
@@ -135,7 +146,7 @@ namespace AppRender
 
         if (cursorPos.collidesWith({19, 0}) && isLoggedIn)
         {
-            appOpened = "home";
+            ExitCurrentApp();
         }
         else if (cursorPos.collidesWith({19, 2}))
         {
