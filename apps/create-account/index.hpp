@@ -2,7 +2,7 @@ namespace CreateAccountApp
 {
     void Create()
     {
-        CURSOR_OFFSET = 7;
+        CURSOR_OFFSET = 6;
         // create new account ui
         lcd.clear();
         lcd.setCursor(1, 0);

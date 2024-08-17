@@ -28,17 +28,24 @@ namespace Cursor
     int v = analogRead(yPin); // get the vertical joystick input
 
     // move cursor
-    if (h > 900 && pos.x < 19)
+    if (h > 700 && pos.x < 19)
       pos.x++;
 
-    if (h < 100 && pos.x > 0)
+    if (h < 300 && pos.x > 0)
       pos.x--;
 
-    if (v < 100 && pos.y < 3)
+    if (v < 300 && pos.y < 3)
       pos.y++;
 
-    if (v > 900 && pos.y > 0)
+    if (v > 700 && pos.y > 0)
       pos.y--;
+
+    // move cursor fast
+    if (h > 1015 && pos.x < 19)
+      pos.x++;
+
+    if (h < 9 && pos.x > 0)
+      pos.x--;
 
     Draw();
   }

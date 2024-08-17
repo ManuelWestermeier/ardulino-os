@@ -4,9 +4,16 @@ namespace HomeApp
 
     void Update()
     {
+        SetAppTitle("Home", 4);
     }
 
-    void Scroll(signed char direction);
-    void OnExit();
-    void OnClick(Pos clickPos);
+    void Scroll(signed char direction) {
+        
+    }
+    void OnExit() {
+
+    }
+    void OnClick(Pos clickPos) {
+        
+    }
 };

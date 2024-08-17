@@ -9,7 +9,7 @@
 #include "./apps/login/index.hpp"
 #include "./apps/home/index.hpp"
 #include "./apps/browser/index.hpp"
-#include "./app.hpp"
+#include "./app-renderer.hpp"
 #include "./auth.hpp"
 
 void setup()
@@ -32,5 +32,6 @@ void setup()
 
 void loop()
 {
+  AppRender::UpdateCurrentApp();
   AppRender::Update();
 }

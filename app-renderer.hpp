@@ -1,6 +1,7 @@
 namespace AppRender
 {
     String appOpened = "home";
+    String lastRenderingApp = appOpened;
 
     void UpdateCurrentApp()
     {
@@ -23,8 +24,8 @@ namespace AppRender
         if (!isLoggedIn)
         {
             lcd.clear();
-            lcd.home();
-            lcd.print("Cant Exit App");
+            lcd.setCursor(3, 1);
+            lcd.print("Can't Exit App");
             delay(2000);
             lcd.clear();
             return;
@@ -34,6 +35,22 @@ namespace AppRender
         {
             BrowserApp::OnExit();
             appOpened = "home";
+        }
+    }
+
+    void ClickCurrentApp(Pos *pos)
+    {
+        if (appOpened == "login" || !isLoggedIn)
+        {
+            LoginApp::OnClick(*pos);
+        }
+        else if (appOpened == "browser")
+        {
+            BrowserApp::OnClick(*pos);
+        }
+        else
+        {
+            HomeApp::OnClick(*pos);
         }
     }
 
@@ -53,7 +70,7 @@ namespace AppRender
     {
         if (Cursor::pos.x < 19 && Cursor::pos.y > 0)
         {
-            char charUnderCursor = appScreenData[Cursor::pos.x][Cursor::pos.y];
+            char charUnderCursor = appScreenData[Cursor::pos.x][Cursor::pos.y - 1];
             if (charUnderCursor == ' ')
                 return '-';
             else
@@ -78,7 +95,10 @@ namespace AppRender
 
     void UpdateLoop(Pos pos, byte _)
     {
-        UpdateCurrentApp();
+        if (lastRenderingApp != appOpened)
+            ClearAppScreen();
+
+        lastRenderingApp = appOpened;
 
         // app title
         lcd.home();
@@ -141,13 +161,21 @@ namespace AppRender
     {
         Pos cursorPos = Cursor::Get<byte>(UpdateLoop, 0);
 
+        // wait for release
         while (digitalRead(swPin) == LOW)
             ;
 
-        if (cursorPos.collidesWith({19, 0}) && isLoggedIn)
+        // app click
+        if (cursorPos.x < 19 && cursorPos.y > 0)
+        {
+            ClickCurrentApp(&cursorPos);
+        }
+        // exit
+        else if (cursorPos.collidesWith({19, 0}))
         {
             ExitCurrentApp();
         }
+        // scrolling (up, down)
         else if (cursorPos.collidesWith({19, 2}))
         {
             ScrollCurrentApp(1);

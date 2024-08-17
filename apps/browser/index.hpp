@@ -6,10 +6,13 @@ namespace BrowserApp
     {
     }
 
-    void Scroll(signed char direction) {}
-    void OnExit()
-    {
-        lcd.print("exit");
+    void Scroll(signed char direction) {
+        
     }
-    void OnClick(Pos clickPos);
+    void OnExit() {
+
+    }
+    void OnClick(Pos clickPos) {
+        
+    }
 };

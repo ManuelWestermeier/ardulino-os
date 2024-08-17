@@ -21,6 +21,6 @@ namespace auth
 
     bool isRightPassword(String *password)
     {
-        return *getPassword() == (*password);
+        return strcmp(getPassword()->c_str(), password->c_str());
     }
 };

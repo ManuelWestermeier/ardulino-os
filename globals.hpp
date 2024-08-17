@@ -53,6 +53,14 @@ void SetAppTitle(char *title, int length)
     }
 }
 
+void ClearAppScreen()
+{
+
+    for (int y = 0; y < 3; y++)
+        for (int x = 0; x < 19; x++)
+            appScreenData[x][y] = ' ';
+}
+
 // auth
 
 bool isLoggedIn = false;
@@ -97,7 +105,5 @@ void InitData()
     for (int i = 0; i < 16; i++)
         appTitle[i] = ' ';
 
-    for (int y = 0; y < 3; y++)
-        for (int x = 0; x < 19; x++)
-            appScreenData[x][y] = ' ';
+    ClearAppScreen();
 }
