@@ -25,4 +25,13 @@ function count(path) {
   return lines;
 }
 
-console.log(count("./"));
+const lines = count("./");
+console.log("lines counted:", lines);
+
+fs.writeFileSync(
+  "README.md",
+  fs
+    .readFileSync("README.md", "utf8")
+    .replace(/lines: \d/, `lines: ${lines}`),
+  "utf-8"
+);
