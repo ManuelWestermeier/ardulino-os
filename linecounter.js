@@ -28,6 +28,8 @@ function count(path) {
 const lines = count("./");
 console.log("lines counted:", lines);
 
+//replace all "lines: number" with the linecount in the README.md file
+
 fs.writeFileSync(
   "README.md",
   fs
