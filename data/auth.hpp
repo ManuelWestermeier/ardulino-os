@@ -7,7 +7,7 @@ namespace auth
         return EEPROM.read(HAS_ACCOUNT_ADRESS) == byte(IS_AUTH_BYTE);
     }
 
-    String *getPassword()
+    char *getPassword()
     {
         return strings::readStoredString(PASSWORD_ADRESS, 6);
     }
@@ -19,8 +19,13 @@ namespace auth
         isLoggedIn = true;
     }
 
-    bool isRightPassword(String *password)
+    bool isRightPassword(char *password)
     {
-        return strcmp(getPassword()->c_str(), password->c_str());
+        for (int i = 0; i < 6; i++)
+        {
+            if (password[i] != EEPROM.read(PASSWORD_ADRESS + i))
+                return false;
+        }
+        return true;
     }
 };

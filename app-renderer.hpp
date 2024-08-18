@@ -56,13 +56,13 @@ namespace AppRender
 
     void ScrollCurrentApp(signed char direction)
     {
-        if (appOpened == "browser")
-        {
-            BrowserApp::Scroll(direction);
-        }
-        else if (appOpened == "login")
+        if (appOpened == "login" || !isLoggedIn)
         {
             LoginApp::Scroll(direction);
+        }
+        else if (appOpened == "browser")
+        {
+            BrowserApp::Scroll(direction);
         }
     }
 

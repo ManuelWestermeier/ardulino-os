@@ -1,9 +1,9 @@
 struct Pos
 {
-  int x = 0;
-  int y = 0;
+  byte x = 0;
+  byte y = 0;
 
-  Pos(int cx, int cy)
+  Pos(byte cx, byte cy)
   {
     x = cx;
     y = cy;

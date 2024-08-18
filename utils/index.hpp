@@ -13,4 +13,12 @@ namespace utils
         digitalWrite(LED_BUILTIN, LOW);
         lcd.clear();
     }
+
+    void print(int x, int y, char *text, int length)
+    {
+        for (int i = 0; i < length; i++)
+        {
+            appScreenData[i + x][y] = text[i];
+        }
+    }
 };

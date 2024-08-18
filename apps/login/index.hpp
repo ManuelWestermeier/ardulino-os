@@ -1,28 +1,44 @@
 namespace LoginApp
 {
     String state;
+    bool createAccountPage = false;
+    Clickable passwordInput{1, 5, 15, "password", 8};
+    Clickable createNewAccountButton{2, 3, 16, "new account", 11};
 
     void Update()
     {
         SetAppTitle("login", 5);
-        char *text = "[password]";
-        for (int i = 0; i < 10; i++)
+
+        if (createAccountPage)
         {
-            appScreenData[i + 4][1] = text[i];
+            for (int i = 0; i < 10; i++)
+            {
+                appScreenData[i + 5][0] = ("You forgot")[i];
+            }
+            for (int i = 0; i < 15; i++)
+            {
+                appScreenData[i + 2][1] = ("your password?!")[i];
+            }
+            createNewAccountButton.Draw();
         }
+        else
+            passwordInput.Draw();
     }
 
     void Scroll(signed char direction)
     {
+        ClearAppScreen();
+        createAccountPage = !createAccountPage;
     }
-    void OnClick(Pos clickPos)
+
+    void CheckPasswordInputClickedAndLogin(Pos clickPos)
     {
         // password button clicked
-        if (clickPos.y == 2 && clickPos.x > 3 && clickPos.x < 14)
+        if (passwordInput.collidesWith(clickPos))
         {
             CURSOR_OFFSET = 6;
             // right password
-            bool isAuth = data::auth::isRightPassword(input::ReadString(DrawKeyBoardMetaData{0, &String("")}));
+            bool isAuth = data::auth::isRightPassword(input::ReadString(DrawKeyBoardMetaData{0, &String("")})->c_str());
             if (isAuth)
             {
                 isLoggedIn = true;
@@ -41,5 +57,22 @@ namespace LoginApp
                 lcd.clear();
             }
         }
+    }
+
+    void CheckChangePasswordButton(Pos clickPos)
+    {
+        // password button clicked
+        if (createNewAccountButton.collidesWith(clickPos))
+        {
+            CreateAccountApp::Create();
+        }
+    }
+
+    void OnClick(Pos clickPos)
+    {
+        if (createAccountPage)
+            CheckChangePasswordButton(clickPos);
+        else
+            CheckPasswordInputClickedAndLogin(clickPos);
     }
 };

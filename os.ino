@@ -1,6 +1,7 @@
 #include "./utils/structs/pos.hpp"
 #include "./utils/structs/draw-keybord-meta-data.hpp"
 #include "./globals.hpp"
+#include "./utils/structs/clickable.hpp"
 #include "./data/index.hpp"
 #include "./cursor.hpp"
 #include "./read/index.hpp"
