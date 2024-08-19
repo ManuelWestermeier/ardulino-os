@@ -1,3 +1,8 @@
+#ifndef DATA_STRINGS_HPP
+#define DATA_STRINGS_HPP
+
+#include "./index.hpp"
+
 namespace strings
 {
   char *readStoredString(int adress, int length)
@@ -20,3 +25,5 @@ namespace strings
     }
   }
 };
+
+#endif

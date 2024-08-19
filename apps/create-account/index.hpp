@@ -1,3 +1,12 @@
+#ifndef APPS_CREATE_ACCOUNT_INDEX_HPP
+#define APPS_CREATE_ACCOUNT_INDEX_HPP
+
+#include "../../utils/structs/draw-keybord-meta-data.hpp"
+#include "../../globals.hpp"
+#include "../../utils/index.hpp"
+#include "../../read/index.hpp"
+#include "../../data/index.hpp"
+
 namespace CreateAccountApp
 {
     void Create()
@@ -51,3 +60,5 @@ namespace CreateAccountApp
         data::auth::createAccount(&password);
     }
 };
+
+#endif

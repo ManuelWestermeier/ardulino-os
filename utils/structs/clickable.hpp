@@ -1,3 +1,9 @@
+#ifndef UTILS_STRUCTS_CLICKABLE_HPP
+#define UTILS_STRUCTS_CLICKABLE_HPP
+
+#include "../../ardulino-os/globals.hpp"
+#include "./pos.hpp"
+
 struct Clickable
 {
     int y;
@@ -23,3 +29,5 @@ struct Clickable
         return (other.y - 1) == y && other.x >= start && other.x <= end;
     }
 };
+
+#endif

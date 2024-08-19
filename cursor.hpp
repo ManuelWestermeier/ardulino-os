@@ -1,3 +1,10 @@
+#ifndef CURSOR_HPP
+
+#define CURSOR_HPP
+
+#include "./globals.hpp"
+#include "./utils/structs/pos.hpp"
+
 namespace Cursor
 {
   Pos pos = {10, 2};
@@ -22,7 +29,7 @@ namespace Cursor
     lcd.write(0);
   }
 
-  Update()
+  void Update()
   {
     int h = analogRead(xPin); // get the horizontal joystick input
     int v = analogRead(yPin); // get the vertical joystick input
@@ -63,3 +70,5 @@ namespace Cursor
     return pos;
   }
 };
+
+#endif

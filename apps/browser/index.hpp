@@ -1,3 +1,8 @@
+#ifndef APPS_BROWSER_INDEX_HPP
+#define APPS_BROWSER_INDEX_HPP
+
+#include "../../utils/structs/pos.hpp"
+
 namespace BrowserApp
 {
     String state;
@@ -16,3 +21,5 @@ namespace BrowserApp
         
     }
 };
+
+#endif

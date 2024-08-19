@@ -1,3 +1,12 @@
+#ifndef APPS_LOGIN_HPP
+#define APPS_LOGIN_HPP
+
+#include "../../globals.hpp"
+#include "../../read/index.hpp"
+#include "../../utils/structs/pos.hpp"
+#include "../../utils/structs/clickable.hpp"
+#include "../create-account/index.hpp"
+
 namespace LoginApp
 {
     String state;
@@ -38,7 +47,9 @@ namespace LoginApp
         {
             CURSOR_OFFSET = 6;
             // right password
-            bool isAuth = data::auth::isRightPassword(input::ReadString(DrawKeyBoardMetaData{0, &String("")})->c_str());
+            String *result = input::ReadString(DrawKeyBoardMetaData{0, &String("")});
+            bool isAuth = data::auth::isRightPassword(result->c_str());
+
             if (isAuth)
             {
                 isLoggedIn = true;
@@ -76,3 +87,5 @@ namespace LoginApp
             CheckPasswordInputClickedAndLogin(clickPos);
     }
 };
+
+#endif

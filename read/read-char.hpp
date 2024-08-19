@@ -1,3 +1,8 @@
+#ifndef READ_READ_CHAR_HPP
+#define READ_READ_CHAR_HPP
+
+#include "./draw-key-board.hpp"
+
 char ReadChar(DrawKeyBoardMetaData *drawKeyBoardMetaData)
 {
   Pos cursorPos = Cursor::Get<DrawKeyBoardMetaData *>(DrawKeyBoard, drawKeyBoardMetaData);
@@ -51,3 +56,5 @@ char ReadChar(DrawKeyBoardMetaData *drawKeyBoardMetaData)
 
   return ReadChar(drawKeyBoardMetaData);
 }
+
+#endif

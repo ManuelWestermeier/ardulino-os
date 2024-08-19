@@ -1,3 +1,15 @@
+#ifndef APP_RENDERER_HPP
+#define APP_RENDERER_HPP
+
+// globals
+#include "./globals.hpp"
+#include "./utils/structs/pos.hpp"
+#include "./cursor.hpp"
+// apps
+#include "./apps/browser/index.hpp"
+#include "./apps/login/index.hpp"
+#include "./apps/home/index.hpp"
+
 namespace AppRender
 {
     String appOpened = "home";
@@ -186,3 +198,5 @@ namespace AppRender
         }
     }
 };
+
+#endif

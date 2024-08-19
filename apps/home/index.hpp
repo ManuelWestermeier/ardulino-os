@@ -1,3 +1,9 @@
+#ifndef APPS_HOME_HPP
+#define APPS_HOME_HPP
+
+#include "../../globals.hpp"
+#include "../../utils/structs/pos.hpp"
+
 namespace HomeApp
 {
     String state;
@@ -7,13 +13,15 @@ namespace HomeApp
         SetAppTitle("Home", 4);
     }
 
-    void Scroll(signed char direction) {
-        
+    void Scroll(signed char direction)
+    {
     }
-    void OnExit() {
-
+    void OnExit()
+    {
     }
-    void OnClick(Pos clickPos) {
-        
+    void OnClick(Pos clickPos)
+    {
     }
 };
+
+#endif

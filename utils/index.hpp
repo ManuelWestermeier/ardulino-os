@@ -1,3 +1,8 @@
+#ifndef UTILS_INDEX_HPP
+#define UTILS_INDEX_HPP
+
+#include "../globals.hpp"
+
 namespace utils
 {
     void waitForRelease()
@@ -22,3 +27,5 @@ namespace utils
         }
     }
 };
+
+#endif

@@ -1,3 +1,12 @@
+#ifndef READ_READ_STRING_HPP
+#define READ_READ_STRING_HPP
+
+#include "../utils/structs/pos.hpp"
+#include "../utils/structs/draw-keybord-meta-data.hpp"
+#include "../globals.hpp"
+#include "../cursor.hpp"
+#include "./read-char.hpp"
+
 String *ReadString(DrawKeyBoardMetaData drawKeyBoardMetaData)
 {
   lcd.clear();
@@ -47,3 +56,5 @@ String *ReadString(DrawKeyBoardMetaData drawKeyBoardMetaData)
 
   return drawKeyBoardMetaData.prompt;
 }
+
+#endif

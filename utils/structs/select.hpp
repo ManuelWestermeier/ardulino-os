@@ -1,3 +1,8 @@
+#ifndef UTILS_STRUCTS_SELECT_HPP
+#define UTILS_STRUCTS_SELECT_HPP
+
+#include "../../globals.hpp"
+
 int Select(String *selections, int selectionsLength, int pos = 0)
 {
     lcd.clear();
@@ -19,7 +24,7 @@ int Select(String *selections, int selectionsLength, int pos = 0)
             for (int charPos = 0; charPos < 18; charPos++)
             {
                 lcd.setCursor(charPos + 2, i);
-                lcd.write(selections[pos + i].length > charPos ? selections[i].charAt(i) : ' ');
+                lcd.write(selections[pos + i].length() > charPos ? selections[i].charAt(i) : ' ');
             }
         }
 
@@ -37,3 +42,5 @@ int Select(String *selections, int selectionsLength, int pos = 0)
 
     return pos;
 }
+
+#endif

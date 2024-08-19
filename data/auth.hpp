@@ -1,3 +1,10 @@
+#ifndef DATA_AUTH_HPP
+#define DATA_AUTH_HPP
+
+#include "../globals.hpp"
+#include "./strings.hpp"
+#include "./index.hpp"
+
 namespace auth
 {
 #define IS_AUTH_BYTE 10
@@ -29,3 +36,5 @@ namespace auth
         return true;
     }
 };
+
+#endif

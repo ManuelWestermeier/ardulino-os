@@ -1,3 +1,6 @@
+#ifndef UTILS_STRUCTS_POS_HPP
+#define UTILS_STRUCTS_POS_HPP
+
 struct Pos
 {
   byte x = 0;
@@ -20,3 +23,5 @@ struct Pos
     return x == other.x && y == other.y;
   }
 };
+
+#endif

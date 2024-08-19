@@ -1,3 +1,12 @@
+#ifndef READ_DRAW_KEY_BOARD_HPP
+#define READ_DRAW_KEY_BOARD_HPP
+
+#include "../utils/structs/pos.hpp"
+#include "../utils/structs/draw-keybord-meta-data.hpp"
+#include "../globals.hpp"
+#include "../cursor.hpp"
+#include "./index.hpp"
+
 void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData *drawKeyBoardMetaData)
 {
   // promt layout
@@ -122,3 +131,5 @@ void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData *drawKeyBoardMetaData)
   else
     lcd.write('-');
 }
+
+#endif
