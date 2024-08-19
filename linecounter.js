@@ -34,6 +34,6 @@ fs.writeFileSync(
   "README.md",
   fs
     .readFileSync("README.md", "utf8")
-    .replace(/lines: \d/, `lines: ${lines}`),
+    .replace(/lines: \d\d\d\d/, `lines: ${lines}`),
   "utf-8"
 );
