@@ -26,6 +26,15 @@ namespace utils
             appScreenData[i + x][y] = text[i];
         }
     }
+
+    void cantExitApp()
+    {
+        lcd.clear();
+        lcd.setCursor(3, 1);
+        lcd.print("Can't Exit App");
+        delay(2000);
+        lcd.clear();
+    }
 };
 
 #endif

@@ -35,15 +35,13 @@ namespace AppRender
     {
         if (!isLoggedIn)
         {
-            lcd.clear();
-            lcd.setCursor(3, 1);
-            lcd.print("Can't Exit App");
-            delay(2000);
-            lcd.clear();
-            return;
+            utils::cantExitApp();
         }
-
-        if (appOpened == "browser")
+        else if (appOpened == "home")
+        {
+            utils::cantExitApp();
+        }
+        else if (appOpened == "browser")
         {
             BrowserApp::OnExit();
             appOpened = "home";
@@ -75,6 +73,10 @@ namespace AppRender
         else if (appOpened == "browser")
         {
             BrowserApp::Scroll(direction);
+        }
+        else
+        {
+            HomeApp::Scroll(direction);
         }
     }
 
