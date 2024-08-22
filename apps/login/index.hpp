@@ -31,7 +31,9 @@ namespace LoginApp
             createNewAccountButton.Draw();
         }
         else
+        {
             passwordInput.Draw();
+        }
     }
 
     void Scroll(signed char direction)
@@ -46,11 +48,12 @@ namespace LoginApp
         if (passwordInput.collidesWith(clickPos))
         {
             CURSOR_OFFSET = 6;
+            // get password input
+            String *defaultInputStringPtr = new String("");
+            auto result = input::ReadString(DrawKeyBoardMetaData{0, defaultInputStringPtr})->c_str();
+            
             // right password
-            String *result = input::ReadString(DrawKeyBoardMetaData{0, &String("")});
-            bool isAuth = data::auth::isRightPassword(result->c_str());
-
-            if (isAuth)
+            if (data::auth::isRightPassword(result))
             {
                 isLoggedIn = true;
                 lcd.clear();
@@ -67,6 +70,8 @@ namespace LoginApp
                 delay(1000);
                 lcd.clear();
             }
+
+            delete defaultInputStringPtr;
         }
     }
 
