@@ -25,6 +25,7 @@ struct Select
 
     int OnClick(byte y)
     {
+        return y;
     }
 };
 
