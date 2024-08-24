@@ -9,7 +9,6 @@
 namespace AppRender
 {
     String appOpened = "home";
-    String lastRenderingApp = appOpened;
 
     void UpdateCurrentApp();
     void ExitCurrentApp();
@@ -18,12 +17,22 @@ namespace AppRender
     char GetCursorPosChar();
     void UpdateLoop(Pos pos, byte _);
     void Update();
+    void SubmitCurrentApp();
+    bool RenderSubmit();
 };
 
 // apps
 #include "./apps/browser/index.hpp"
 #include "./apps/login/index.hpp"
 #include "./apps/home/index.hpp"
+#include "./apps/eeprom-editor/index.hpp"
+
+bool AppRender::RenderSubmit()
+{
+    if (appOpened == "home")
+        return true;
+    return false;
+}
 
 void AppRender::UpdateCurrentApp()
 {
@@ -35,6 +44,10 @@ void AppRender::UpdateCurrentApp()
     {
         LoginApp::Update();
     }
+    else if (appOpened == "eeprom-editor")
+    {
+        EEPROMEditor::Update();
+    }
     else
     {
         HomeApp::Update();
@@ -43,7 +56,8 @@ void AppRender::UpdateCurrentApp()
 
 void AppRender::ExitCurrentApp()
 {
-    if (!isLoggedIn)
+    ClearAppScreen();
+    if (!isLoggedIn || appOpened == "login")
     {
         utils::cantExitApp();
     }
@@ -54,6 +68,9 @@ void AppRender::ExitCurrentApp()
     else if (appOpened == "browser")
     {
         BrowserApp::OnExit();
+        appOpened = "home";
+    }
+    else {
         appOpened = "home";
     }
 }
@@ -68,6 +85,11 @@ void AppRender::ClickCurrentApp(Pos *pos)
     {
         BrowserApp::OnClick(*pos);
     }
+    else if (appOpened == "eeprom-editor")
+    {
+        EEPROMEditor::OnClick(*pos);
+    }
+
     else
     {
         HomeApp::OnClick(*pos);
@@ -84,9 +106,21 @@ void AppRender::ScrollCurrentApp(signed char direction)
     {
         BrowserApp::Scroll(direction);
     }
+    else if (appOpened == "eeprom-editor")
+    {
+        EEPROMEditor::Scroll(direction);
+    }
     else
     {
         HomeApp::Scroll(direction);
+    }
+}
+
+void AppRender::SubmitCurrentApp()
+{
+    if (appOpened == "home")
+    {
+        HomeApp::Submit();
     }
 }
 
@@ -110,20 +144,17 @@ char AppRender::GetCursorPosChar()
     }
     if (Cursor::pos.collidesWith({19, 0}))
         return 'x';
+    if (Cursor::pos.collidesWith({19, 1}))
+        return RenderSubmit() ? confirm_charcode : ' ';
     if (Cursor::pos.collidesWith({19, 2}))
-        return '<';
+        return upArrowChar;
     if (Cursor::pos.collidesWith({19, 3}))
-        return '>';
+        return downArrowChar;
     return '-';
 }
 
 void AppRender::UpdateLoop(Pos pos, byte _)
 {
-    if (lastRenderingApp != appOpened)
-        ClearAppScreen();
-
-    lastRenderingApp = appOpened;
-
     // app title
     lcd.home();
     for (int i = 0; i < 16; i++)
@@ -174,11 +205,11 @@ void AppRender::UpdateLoop(Pos pos, byte _)
 
     // scrolls
     lcd.setCursor(19, 1);
-    lcd.write(' ');
+    lcd.write(RenderSubmit() ? confirm_charcode : ' ');
     lcd.setCursor(19, 2);
-    lcd.write('<');
+    lcd.write(upArrowChar);
     lcd.setCursor(19, 3);
-    lcd.write('>');
+    lcd.write(downArrowChar);
 }
 
 void AppRender::Update()
@@ -198,6 +229,11 @@ void AppRender::Update()
     else if (cursorPos.collidesWith({19, 0}))
     {
         ExitCurrentApp();
+    }
+    // submit
+    else if (cursorPos.collidesWith({19, 1}))
+    {
+        SubmitCurrentApp();
     }
     // scrolling (up, down)
     else if (cursorPos.collidesWith({19, 2}))

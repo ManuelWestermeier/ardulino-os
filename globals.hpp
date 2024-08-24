@@ -20,6 +20,8 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 
 #define cursor_charcode 0
 #define confirm_charcode 1
+#define upArrowChar 2
+#define downArrowChar 3
 #define RENDERING_FRAME 100
 
 #define GET_CHAR_NO_CHAR 0
@@ -100,6 +102,29 @@ uint8_t confirmChar[8] = {
     B00010,
     B10100,
     B01100,
+    B00000,
+};
+
+// Define custom characters for up and down arrows
+byte upArrow[8] = {
+    B00000,
+    B00100,
+    B01010,
+    B10001,
+    B00000,
+    B00000,
+    B00000,
+    B00000,
+};
+
+byte downArrow[8] = {
+    B00000,
+    B00000,
+    B00000,
+    B00000,
+    B10001,
+    B01010,
+    B00100,
     B00000,
 };
 

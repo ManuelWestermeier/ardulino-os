@@ -35,6 +35,14 @@ namespace utils
         delay(2000);
         lcd.clear();
     }
+
+    char *sizeString(char *inp, byte length)
+    {
+        char out[length];
+        for (byte i = 0; i < length; i++)
+            out[i] = inp[i];
+        return out;
+    }
 };
 
 #endif

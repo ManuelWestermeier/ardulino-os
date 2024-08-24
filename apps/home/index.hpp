@@ -2,6 +2,7 @@
 #define APPS_HOME_HPP
 
 #include "../../globals.hpp"
+#include "../../auth.hpp"
 #include "../../utils/structs/pos.hpp"
 #include "../../utils/structs/select.hpp"
 #include "../../app-renderer.hpp"
@@ -13,13 +14,14 @@ namespace HomeApp
 {
     String state;
 
-    String appOptions[3]{
+    String appOptions[4]{
         "Browser",
+        "EEPROM Editor",
         "Login",
         "Create Account",
     };
 
-    Select appSelect{appOptions, 3, 0};
+    Select appSelect{appOptions, 4, 0};
 
     void Update()
     {
@@ -32,18 +34,34 @@ namespace HomeApp
         appSelect.Scroll(direction);
     }
 
-    void OnClick(Pos clickPos)
+    void OnClick(Pos _)
     {
-        int clickedApp = appSelect.OnClick(clickPos.y);
-
-        if (clickedApp == -1)
-            return;
+        int clickedApp = appSelect.OnClick();
+        ClearAppScreen();
 
         if (appOptions[clickedApp] == "Create Account")
-            return CreateAccountApp::Create();
+        {
+            isLoggedIn = false;
+            CreateAccountApp::Create();
+        }
+        else if (appOptions[clickedApp] == "Login")
+        {
+            isLoggedIn = false;
+            Auth();
+        }
+        else if (appOptions[clickedApp] == "Browser")
+        {
+            AppRender::appOpened = "browser";
+        }
+        else if (appOptions[clickedApp] == "EEPROM Editor")
+        {
+            AppRender::appOpened = "eeprom-editor";
+        }
+    }
 
-        appOptions[clickedApp].toLowerCase();
-        AppRender::appOpened = appOptions[clickedApp];
+    void Submit()
+    {
+        OnClick({19, 1});
     }
 };
 

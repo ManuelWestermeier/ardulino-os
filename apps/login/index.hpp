@@ -47,11 +47,16 @@ namespace LoginApp
         // password button clicked
         if (passwordInput.collidesWith(clickPos))
         {
+
+#ifdef IS_IN_DEBUG_LOGGED_IN
+            isLoggedIn = true;
+            return;
+#endif
+
             CURSOR_OFFSET = 6;
             // get password input
             String *defaultInputStringPtr = new String("");
             auto result = input::ReadString(DrawKeyBoardMetaData{0, defaultInputStringPtr})->c_str();
-            
             // right password
             if (data::auth::isRightPassword(result))
             {

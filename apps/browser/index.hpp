@@ -2,6 +2,7 @@
 #define APPS_BROWSER_INDEX_HPP
 
 #include "../../utils/structs/pos.hpp"
+#include "../../globals.hpp"
 
 namespace BrowserApp
 {
@@ -9,16 +10,17 @@ namespace BrowserApp
 
     void Update()
     {
+        SetAppTitle("Browser", 7);
     }
 
-    void Scroll(signed char direction) {
-        
+    void Scroll(signed char direction)
+    {
     }
-    void OnExit() {
-
+    void OnExit()
+    {
     }
-    void OnClick(Pos clickPos) {
-        
+    void OnClick(Pos clickPos)
+    {
     }
 };
 

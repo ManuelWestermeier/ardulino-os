@@ -1,3 +1,5 @@
+#define IS_IN_DEBUG_LOGGED_IN
+
 #include "./utils/structs/draw-keybord-meta-data.hpp"
 #include "./globals.hpp"
 #include "./utils/structs/clickable.hpp"
@@ -15,6 +17,8 @@ void setup()
 
   lcd.createChar(cursor_charcode, cursorChar[0]);
   lcd.createChar(confirm_charcode, confirmChar);
+  lcd.createChar(upArrowChar, upArrow);
+  lcd.createChar(downArrowChar, downArrow);
 
   pinMode(swPin, INPUT_PULLUP);
   pinMode(buttonPin, INPUT_PULLUP);

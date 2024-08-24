@@ -17,6 +17,14 @@ namespace strings
     return out;
   }
 
+  void writeStringInBuffer(char *buffer, int adress, int length)
+  {
+    for (int i = 0; i < length; i++)
+    {
+      buffer[i] = EEPROM.read(adress + i);
+    }
+  }
+
   void storeString(int adress, String *str, int length)
   {
     for (int i = 0; i < length; i++)
