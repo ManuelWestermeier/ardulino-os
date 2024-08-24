@@ -25,4 +25,4 @@ function readDir(path) {
 }
 
 readDir("./");
-fs.writeFileSync("the-codebase.cpp", out, "utf-8");
+fs.writeFileSync("the-codebase-in-one-file.txt", out, "utf-8");

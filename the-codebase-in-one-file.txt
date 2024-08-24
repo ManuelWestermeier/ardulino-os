@@ -1,0 +1,1228 @@
+
+//filepath: app-renderer.hpp
+#ifndef APP_RENDERER_HPP
+#define APP_RENDERER_HPP
+
+// globals
+#include "./globals.hpp"
+#include "./utils/structs/pos.hpp"
+#include "./cursor.hpp"
+// apps
+#include "./apps/browser/index.hpp"
+#include "./apps/login/index.hpp"
+#include "./apps/home/index.hpp"
+
+namespace AppRender
+{
+    String appOpened = "home";
+    String lastRenderingApp = appOpened;
+
+    void UpdateCurrentApp()
+    {
+        if (appOpened == "browser")
+        {
+            BrowserApp::Update();
+        }
+        else if (appOpened == "login")
+        {
+            LoginApp::Update();
+        }
+        else
+        {
+            HomeApp::Update();
+        }
+    }
+
+    void ExitCurrentApp()
+    {
+        if (!isLoggedIn)
+        {
+            utils::cantExitApp();
+        }
+        else if (appOpened == "home")
+        {
+            utils::cantExitApp();
+        }
+        else if (appOpened == "browser")
+        {
+            BrowserApp::OnExit();
+            appOpened = "home";
+        }
+    }
+
+    void ClickCurrentApp(Pos *pos)
+    {
+        if (appOpened == "login" || !isLoggedIn)
+        {
+            LoginApp::OnClick(*pos);
+        }
+        else if (appOpened == "browser")
+        {
+            BrowserApp::OnClick(*pos);
+        }
+        else
+        {
+            HomeApp::OnClick(*pos);
+        }
+    }
+
+    void ScrollCurrentApp(signed char direction)
+    {
+        if (appOpened == "login" || !isLoggedIn)
+        {
+            LoginApp::Scroll(direction);
+        }
+        else if (appOpened == "browser")
+        {
+            BrowserApp::Scroll(direction);
+        }
+        else
+        {
+            HomeApp::Scroll(direction);
+        }
+    }
+
+    char GetCursorPosChar()
+    {
+        if (Cursor::pos.x < 19 && Cursor::pos.y > 0)
+        {
+            char charUnderCursor = appScreenData[Cursor::pos.x][Cursor::pos.y - 1];
+            if (charUnderCursor == ' ')
+                return '-';
+            else
+                return charUnderCursor;
+        }
+        if (Cursor::pos.x < 16 && Cursor::pos.y == 0)
+        {
+            char charUnderCursor = appTitle[Cursor::pos.x];
+            if (charUnderCursor == ' ')
+                return '-';
+            else
+                return charUnderCursor;
+        }
+        if (Cursor::pos.collidesWith({19, 0}))
+            return 'x';
+        if (Cursor::pos.collidesWith({19, 2}))
+            return '<';
+        if (Cursor::pos.collidesWith({19, 3}))
+            return '>';
+        return '-';
+    }
+
+    void UpdateLoop(Pos pos, byte _)
+    {
+        if (lastRenderingApp != appOpened)
+            ClearAppScreen();
+
+        lastRenderingApp = appOpened;
+
+        // app title
+        lcd.home();
+        for (int i = 0; i < 16; i++)
+        {
+            if (!Cursor::pos.collidesWith({i, 0}))
+            {
+                lcd.setCursor(i, 0);
+                lcd.write(appTitle[i]);
+            }
+        }
+        // space aufter title
+        if (!Cursor::pos.collidesWith({16, 0}))
+        {
+            lcd.setCursor(16, 0);
+            lcd.write(' ');
+        }
+        // draw hovered char
+        if (!Cursor::pos.collidesWith({17, 0}))
+        {
+            lcd.setCursor(17, 0);
+            lcd.write(GetCursorPosChar());
+        }
+        // space after hovered char
+        if (!Cursor::pos.collidesWith({18, 0}))
+        {
+            lcd.setCursor(18, 0);
+            lcd.write(' ');
+        }
+        // exit
+        if (!Cursor::pos.collidesWith({19, 0}))
+        {
+            lcd.setCursor(19, 0);
+            lcd.write('x');
+        }
+
+        // app view
+        for (int y = 0; y < 3; y++)
+        {
+            for (int x = 0; x < 19; x++)
+            {
+                if (!Cursor::pos.collidesWith({x, y + 1}))
+                {
+                    lcd.setCursor(x, y + 1);
+                    lcd.write(appScreenData[x][y]);
+                }
+            }
+        }
+
+        // scrolls
+        lcd.setCursor(19, 1);
+        lcd.write(' ');
+        lcd.setCursor(19, 2);
+        lcd.write('<');
+        lcd.setCursor(19, 3);
+        lcd.write('>');
+    }
+
+    void Update()
+    {
+        Pos cursorPos = Cursor::Get<byte>(UpdateLoop, 0);
+
+        // wait for release
+        while (digitalRead(swPin) == LOW)
+            ;
+
+        // app click
+        if (cursorPos.x < 19 && cursorPos.y > 0)
+        {
+            ClickCurrentApp(&cursorPos);
+        }
+        // exit
+        else if (cursorPos.collidesWith({19, 0}))
+        {
+            ExitCurrentApp();
+        }
+        // scrolling (up, down)
+        else if (cursorPos.collidesWith({19, 2}))
+        {
+            ScrollCurrentApp(1);
+        }
+        else if (cursorPos.collidesWith({19, 3}))
+        {
+            ScrollCurrentApp(-1);
+        }
+    }
+};
+
+#endif
+
+//filepath: apps\browser\index.hpp
+#ifndef APPS_BROWSER_INDEX_HPP
+#define APPS_BROWSER_INDEX_HPP
+
+#include "../../utils/structs/pos.hpp"
+
+namespace BrowserApp
+{
+    String state;
+
+    void Update()
+    {
+    }
+
+    void Scroll(signed char direction) {
+        
+    }
+    void OnExit() {
+
+    }
+    void OnClick(Pos clickPos) {
+        
+    }
+};
+
+#endif
+
+//filepath: apps\create-account\index.hpp
+#ifndef APPS_CREATE_ACCOUNT_INDEX_HPP
+#define APPS_CREATE_ACCOUNT_INDEX_HPP
+
+#include "../../utils/structs/draw-keybord-meta-data.hpp"
+#include "../../globals.hpp"
+#include "../../utils/index.hpp"
+#include "../../read/index.hpp"
+#include "../../data/index.hpp"
+
+namespace CreateAccountApp
+{
+    void Create()
+    {
+        CURSOR_OFFSET = 6;
+        // create new account ui
+        lcd.clear();
+        lcd.setCursor(1, 0);
+        lcd.print("create new account");
+        lcd.setCursor(3, 1);
+        lcd.print("input password");
+        lcd.setCursor(2, 3);
+        lcd.print("(press joystick)");
+
+        // get the password
+    getPassword:
+        utils::waitForRelease();
+        lcd.setCursor(5, 1);
+        lcd.print("password:");
+        lcd.setCursor(0, 2);
+        lcd.print("(6 characters long)");
+        utils::waitForRelease();
+        String password = *input::ReadString(DrawKeyBoardMetaData{0, &String("")});
+        if (password.length() != 6) // check length
+        {
+            lcd.clear();
+            lcd.setCursor(1, 1);
+            lcd.print("Password isn't 6");
+            lcd.setCursor(2, 2);
+            lcd.print("characters long");
+            goto getPassword;
+        }
+        // rewrite password
+        lcd.clear();
+        lcd.setCursor(2, 1);
+        lcd.print("rewrite password");
+        utils::waitForRelease();
+        String password2 = *input::ReadString(DrawKeyBoardMetaData{0, &String("")});
+
+        // if they arent the same retry
+        if (password != password2)
+        {
+            lcd.clear();
+            lcd.setCursor(1, 1);
+            lcd.print("Passwords aren't");
+            lcd.setCursor(5, 2);
+            lcd.print("the same");
+            goto getPassword;
+        }
+
+        data::auth::createAccount(&password);
+    }
+};
+
+#endif
+
+//filepath: apps\home\index.hpp
+#ifndef APPS_HOME_HPP
+#define APPS_HOME_HPP
+
+#include "../../globals.hpp"
+#include "../../utils/structs/pos.hpp"
+#include "../../utils/structs/select.hpp"
+#include "../../app-renderer.hpp"
+
+// apps
+#include "../create-account/index.hpp"
+
+namespace HomeApp
+{
+    String state;
+
+    String appOptions[3]{
+        "Browser",
+        "Login",
+        "Create Account",
+    };
+
+    Select appSelect{appOptions, 3, 0};
+
+    void Update()
+    {
+        SetAppTitle("Home", 4);
+        appSelect.Update();
+    }
+
+    void Scroll(signed char direction)
+    {
+        appSelect.Scroll(direction);
+    }
+
+    void OnClick(Pos clickPos)
+    {
+        int clickedApp = appSelect.OnClick(clickPos.y);
+
+        if (clickedApp == -1)
+            return;
+
+        if (appOptions[clickedApp] == "Create Account")
+            return CreateAccountApp::Create();
+
+        appOptions[clickedApp].toLowerCase();
+        AppRender::appOpened = appOptions[clickedApp];
+    }
+};
+
+#endif
+
+//filepath: apps\login\index.hpp
+#ifndef APPS_LOGIN_HPP
+#define APPS_LOGIN_HPP
+
+#include "../../globals.hpp"
+#include "../../read/index.hpp"
+#include "../../utils/structs/pos.hpp"
+#include "../../utils/structs/clickable.hpp"
+#include "../create-account/index.hpp"
+
+namespace LoginApp
+{
+    String state;
+    bool createAccountPage = false;
+    Clickable passwordInput{1, 5, 15, "password", 8};
+    Clickable createNewAccountButton{2, 3, 16, "new account", 11};
+
+    void Update()
+    {
+        SetAppTitle("login", 5);
+
+        if (createAccountPage)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                appScreenData[i + 5][0] = ("You forgot")[i];
+            }
+            for (int i = 0; i < 15; i++)
+            {
+                appScreenData[i + 2][1] = ("your password?!")[i];
+            }
+            createNewAccountButton.Draw();
+        }
+        else
+        {
+            passwordInput.Draw();
+        }
+    }
+
+    void Scroll(signed char direction)
+    {
+        ClearAppScreen();
+        createAccountPage = !createAccountPage;
+    }
+
+    void CheckPasswordInputClickedAndLogin(Pos clickPos)
+    {
+        // password button clicked
+        if (passwordInput.collidesWith(clickPos))
+        {
+            CURSOR_OFFSET = 6;
+            // get password input
+            String *defaultInputStringPtr = new String("");
+            auto result = input::ReadString(DrawKeyBoardMetaData{0, defaultInputStringPtr})->c_str();
+            
+            // right password
+            if (data::auth::isRightPassword(result))
+            {
+                isLoggedIn = true;
+                lcd.clear();
+                lcd.setCursor(5, 1);
+                lcd.print("Logged in");
+                delay(1000);
+                lcd.clear();
+            }
+            else
+            {
+                lcd.clear();
+                lcd.setCursor(3, 1);
+                lcd.print("wrong password");
+                delay(1000);
+                lcd.clear();
+            }
+
+            delete defaultInputStringPtr;
+        }
+    }
+
+    void CheckChangePasswordButton(Pos clickPos)
+    {
+        // password button clicked
+        if (createNewAccountButton.collidesWith(clickPos))
+        {
+            CreateAccountApp::Create();
+        }
+    }
+
+    void OnClick(Pos clickPos)
+    {
+        if (createAccountPage)
+            CheckChangePasswordButton(clickPos);
+        else
+            CheckPasswordInputClickedAndLogin(clickPos);
+    }
+};
+
+#endif
+
+//filepath: ardulino-os.ino
+#include "./utils/structs/pos.hpp"
+#include "./utils/structs/draw-keybord-meta-data.hpp"
+#include "./globals.hpp"
+#include "./utils/structs/clickable.hpp"
+#include "./data/index.hpp"
+#include "./cursor.hpp"
+#include "./read/index.hpp"
+#include "./utils/index.hpp"
+#include "./apps/create-account/index.hpp"
+#include "./apps/login/index.hpp"
+#include "./apps/home/index.hpp"
+#include "./apps/browser/index.hpp"
+#include "./app-renderer.hpp"
+#include "./auth.hpp"
+
+void setup()
+{
+  lcd.init();
+  lcd.backlight();
+
+  lcd.createChar(cursor_charcode, cursorChar[0]);
+  lcd.createChar(confirm_charcode, confirmChar);
+
+  pinMode(swPin, INPUT_PULLUP);
+  pinMode(buttonPin, INPUT_PULLUP);
+  pinMode(ledPin, OUTPUT);
+
+  digitalWrite(LED_BUILTIN, LOW);
+
+  InitData();
+  Auth();
+}
+
+void loop()
+{
+  AppRender::UpdateCurrentApp();
+  AppRender::Update();
+}
+
+//filepath: auth.hpp
+#ifndef AUTH_HPP
+#define AUTH_HPP
+
+#include "./globals.hpp"
+
+#include "./apps/create-account/index.hpp"
+#include "./apps/login/index.hpp"
+
+#include "./data/index.hpp"
+#include "./app-renderer.hpp"
+
+void Auth()
+{
+    while (!isLoggedIn)
+    {
+        if (!data::auth::accountExists())
+        {
+            CreateAccountApp::Create();
+        }
+        else
+        {
+            LoginApp::Update();
+            AppRender::Update();
+        }
+    }
+    ClearAppScreen();
+}
+
+#endif
+
+//filepath: cursor.hpp
+#ifndef CURSOR_HPP
+#define CURSOR_HPP
+
+#include "./globals.hpp"
+#include "./utils/structs/pos.hpp"
+
+namespace Cursor
+{
+  Pos pos = {10, 2};
+
+  int last = 3;
+  bool cursorFrameState = 0;
+
+  void UpdateCursorFrameState()
+  {
+    if (last-- == 0)
+    {
+      cursorFrameState = !cursorFrameState;
+      lcd.createChar(cursor_charcode, cursorChar[cursorFrameState]);
+      last = 3;
+    }
+  }
+
+  void Draw()
+  {
+    UpdateCursorFrameState();
+    lcd.setCursor(pos.x, pos.y);
+    lcd.write(0);
+  }
+
+  void Update()
+  {
+    int h = analogRead(xPin); // get the horizontal joystick input
+    int v = analogRead(yPin); // get the vertical joystick input
+
+    // move cursor
+    if (h > 700 && pos.x < 19)
+      pos.x++;
+
+    if (h < 300 && pos.x > 0)
+      pos.x--;
+
+    if (v < 300 && pos.y < 3)
+      pos.y++;
+
+    if (v > 700 && pos.y > 0)
+      pos.y--;
+
+    // move cursor fast
+    if (h > 1015 && pos.x < 19)
+      pos.x++;
+
+    if (h < 9 && pos.x > 0)
+      pos.x--;
+
+    Draw();
+  }
+
+  template <typename BypassedType>
+  Pos Get(void (*bevorUpdate)(Pos, BypassedType), BypassedType bypassed)
+  {
+    static int round = 0;
+    while (digitalRead(swPin) != LOW)
+    {
+      bevorUpdate(pos, bypassed);
+      Update();
+      delay(RENDERING_FRAME);
+    }
+    return pos;
+  }
+};
+
+#endif
+
+//filepath: data\auth.hpp
+#ifndef DATA_AUTH_HPP
+#define DATA_AUTH_HPP
+
+#include "../globals.hpp"
+#include "./strings.hpp"
+#include "./index.hpp"
+
+namespace auth
+{
+#define IS_AUTH_BYTE 10
+
+    bool accountExists()
+    {
+        return EEPROM.read(HAS_ACCOUNT_ADRESS) == byte(IS_AUTH_BYTE);
+    }
+
+    char *getPassword()
+    {
+        return strings::readStoredString(PASSWORD_ADRESS, 6);
+    }
+
+    void createAccount(String *password)
+    {
+        strings::storeString(PASSWORD_ADRESS, password, 6);
+        EEPROM.write(HAS_ACCOUNT_ADRESS, byte(IS_AUTH_BYTE));
+        isLoggedIn = true;
+    }
+
+    bool isRightPassword(char *password)
+    {
+        for (int i = 0; i < 6; i++)
+        {
+            if (password[i] != EEPROM.read(PASSWORD_ADRESS + i))
+                return false;
+        }
+        return true;
+    }
+};
+
+#endif
+
+//filepath: data\index.hpp
+#ifndef DATA_INDEX_HPP
+#define DATA_INDEX_HPP
+
+#include <EEPROM.h>
+
+namespace data
+{
+#include "./strings.hpp"
+#include "./auth.hpp"
+};
+
+#endif
+
+//filepath: data\strings.hpp
+#ifndef DATA_STRINGS_HPP
+#define DATA_STRINGS_HPP
+
+#include "./index.hpp"
+
+namespace strings
+{
+  char *readStoredString(int adress, int length)
+  {
+    char out[length];
+
+    for (int i = 0; i < length; i++)
+    {
+      out[i] = EEPROM.read(adress + i);
+    }
+
+    return out;
+  }
+
+  void storeString(int adress, String *str, int length)
+  {
+    for (int i = 0; i < length; i++)
+    {
+      EEPROM.write(adress + i, str->charAt(i));
+    }
+  }
+};
+
+#endif
+
+//filepath: globals.hpp
+#ifndef GLOBALS_HPP
+#define GLOBALS_HPP
+
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 20, 4);
+
+// horizontal joystick pin
+#define xPin A0
+// vertical joystick pin
+#define yPin A1
+// joystick button pin
+#define swPin 2
+// Push-Button pin
+#define buttonPin 3
+// LED pin
+#define ledPin 9
+
+// input
+
+#define cursor_charcode 0
+#define confirm_charcode 1
+#define RENDERING_FRAME 100
+
+#define GET_CHAR_NO_CHAR 0
+#define GET_CHAR_LEFT_SHIFT 1
+#define GET_CHAR_RIGHT_SHIFT 2
+#define GET_CHAR_SUBMIT 3
+#define GET_CHAR_BACKSPACE 4
+#define GET_CHAR_DELETE_ALL 5
+
+String keyBoardLayout[2] = {
+    "abcdefghij0123456789",
+    "klmnopqrstuvwxyz .?!"};
+
+int CURSOR_OFFSET = 15;
+
+// storage
+
+#define HAS_ACCOUNT_ADRESS 0
+#define PASSWORD_ADRESS 1
+
+// app
+
+char appScreenData[19][3];
+char appTitle[16];
+
+void SetAppTitle(char *title, int length)
+{
+    for (int i = 0; i < 16; i++)
+    {
+        if (i < length)
+            appTitle[i] = title[i];
+        else
+            appTitle[i] = ' ';
+    }
+}
+
+void ClearAppScreen()
+{
+
+    for (int y = 0; y < 3; y++)
+        for (int x = 0; x < 19; x++)
+            appScreenData[x][y] = ' ';
+}
+
+// auth
+
+bool isLoggedIn = false;
+
+// custum characters
+
+uint8_t cursorChar[2][8] = {
+    {
+        B00000,
+        B00100,
+        B01110,
+        B11111,
+        B00100,
+        B00100,
+        B00100,
+        B00000,
+    },
+    {
+        B00000,
+        B00100,
+        B01110,
+        B10101,
+        B00100,
+        B00100,
+        B00100,
+        B00000,
+    }};
+
+uint8_t confirmChar[8] = {
+    B00000,
+    B00001,
+    B00001,
+    B00010,
+    B00010,
+    B10100,
+    B01100,
+    B00000,
+};
+
+void InitData()
+{
+    for (int i = 0; i < 16; i++)
+        appTitle[i] = ' ';
+
+    ClearAppScreen();
+}
+
+#endif
+
+//filepath: read\draw-key-board.hpp
+#ifndef READ_DRAW_KEY_BOARD_HPP
+#define READ_DRAW_KEY_BOARD_HPP
+
+#include "../utils/structs/pos.hpp"
+#include "../utils/structs/draw-keybord-meta-data.hpp"
+#include "../globals.hpp"
+#include "../cursor.hpp"
+#include "./index.hpp"
+
+void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData *drawKeyBoardMetaData)
+{
+  // promt layout
+  if (!cursorPos.collidesWith({0, 0}))
+  {
+    lcd.home();
+    lcd.write('<');
+  }
+  if (!cursorPos.collidesWith({19, 0}))
+  {
+    lcd.setCursor(19, 0);
+    lcd.write('>');
+  }
+
+  // Assuming drawKeyBoardMetaData and lcd are properly initialized and available
+  int promptLength = drawKeyBoardMetaData->prompt->length();
+
+  for (int i = 1; i < 18; i++)
+  {
+    int writeCharindex = i - (CURSOR_OFFSET + 1) + drawKeyBoardMetaData->writePos;
+
+    if (i < (CURSOR_OFFSET + 1))
+    {
+      if (!cursorPos.collidesWith({i, 0}))
+      {
+        lcd.setCursor(i, 0);
+
+        if (writeCharindex < promptLength && writeCharindex > -1)
+          lcd.write(drawKeyBoardMetaData->prompt->charAt(writeCharindex));
+        else
+          lcd.write(' ');
+      }
+    }
+    else
+    {
+      if (!cursorPos.collidesWith({i + 1, 0}))
+      {
+        lcd.setCursor(i + 1, 0);
+
+        if (writeCharindex < promptLength && writeCharindex > -1)
+          lcd.write(drawKeyBoardMetaData->prompt->charAt(writeCharindex));
+        else
+          lcd.write(' ');
+      }
+    }
+  }
+
+  if (!cursorPos.collidesWith({(CURSOR_OFFSET + 1), 0}))
+  {
+    lcd.setCursor((CURSOR_OFFSET + 1), 0);
+    lcd.write(Cursor::cursorFrameState ? 'I' : '|');
+  }
+
+  // draw alphabetics layout
+  for (int i = 0; i < 20; i++)
+  {
+    if (!cursorPos.collidesWith({i, 1}))
+    {
+      lcd.setCursor(i, 1);
+      lcd.write(currentCharUpperCase ? toupper(keyBoardLayout[0][i]) : keyBoardLayout[0][i]);
+    }
+    if (!cursorPos.collidesWith({i, 2}))
+    {
+      lcd.setCursor(i, 2);
+      lcd.write(currentCharUpperCase ? toupper(keyBoardLayout[1][i]) : keyBoardLayout[1][i]);
+    }
+  }
+
+  // clear last row
+  for (int i = 1; i < 19; i++)
+  {
+    if (!cursorPos.collidesWith({i, 3}))
+    {
+      lcd.setCursor(i, 3);
+      lcd.write(' ');
+    }
+  }
+
+  // Delete all
+  lcd.setCursor(13, 3);
+  lcd.write('X');
+
+  // Uppercase and Lowercase
+  lcd.setCursor(15, 3);
+  lcd.write('x');
+
+  // Uppercase and Lowercase
+  lcd.setCursor(17, 3);
+  lcd.write(currentCharUpperCase ? 'a' : 'A');
+
+  // confirm
+  lcd.setCursor(19, 3);
+  lcd.write(confirm_charcode);
+
+  // selected
+  lcd.setCursor(0, 3);
+  if (cursorPos.y == 1 || cursorPos.y == 2)
+  {
+    lcd.setCursor(0, 3);
+    lcd.write(currentCharUpperCase ? toupper(keyBoardLayout[cursorPos.y - 1].charAt(cursorPos.x)) : keyBoardLayout[cursorPos.y - 1].charAt(cursorPos.x));
+  }
+  else if (cursorPos.y == 0)
+  {
+    lcd.write(cursorPos.x == 0 ? '<' : (cursorPos.x == 19 ? '>' : '-'));
+  }
+  else if (cursorPos.collidesWith({15, 3}))
+  {
+    lcd.write('x');
+  }
+  else if (cursorPos.collidesWith({13, 3}))
+  {
+    lcd.write('X');
+  }
+  else if (cursorPos.collidesWith({17, 3}))
+  {
+    lcd.write(currentCharUpperCase ? 'a' : 'A');
+  }
+  else if (cursorPos.collidesWith({19, 3}))
+  {
+    lcd.write(confirm_charcode);
+  }
+  else
+    lcd.write('-');
+}
+
+#endif
+
+//filepath: read\index.hpp
+#ifndef READ_INDEX_HPP
+#define READ_INDEX_HPP
+
+#include <ctype.h>
+
+bool currentCharUpperCase = false;
+
+namespace input
+{
+
+#include "./draw-key-board.hpp"
+#include "./read-char.hpp"
+#include "./read-string.hpp"
+};
+
+#endif
+
+//filepath: read\read-char.hpp
+#ifndef READ_READ_CHAR_HPP
+#define READ_READ_CHAR_HPP
+
+#include "./draw-key-board.hpp"
+
+char ReadChar(DrawKeyBoardMetaData *drawKeyBoardMetaData)
+{
+  Pos cursorPos = Cursor::Get<DrawKeyBoardMetaData *>(DrawKeyBoard, drawKeyBoardMetaData);
+
+  digitalWrite(LED_BUILTIN, HIGH);
+  while (digitalRead(swPin) == LOW)
+    ;
+  digitalWrite(LED_BUILTIN, LOW);
+
+  // characters
+  if (cursorPos.y == 1 || cursorPos.y == 2)
+  {
+    char currentChar = keyBoardLayout[cursorPos.y - 1].charAt(cursorPos.x);
+    return currentCharUpperCase ? toupper(currentChar) : currentChar;
+  }
+
+  // left scroll
+  if (cursorPos.collidesWith({0, 0}))
+  {
+    return GET_CHAR_LEFT_SHIFT;
+  }
+
+  // right scroll
+  if (cursorPos.collidesWith({19, 0}))
+  {
+    return GET_CHAR_RIGHT_SHIFT;
+  }
+
+  // backspace
+  if (cursorPos.collidesWith({15, 3}))
+  {
+    return GET_CHAR_BACKSPACE;
+  }
+
+  // uppercase and lowercase
+  if (cursorPos.collidesWith({17, 3}))
+  {
+    currentCharUpperCase = !currentCharUpperCase;
+    DrawKeyBoard(cursorPos, drawKeyBoardMetaData);
+    delay(RENDERING_FRAME);
+    return ReadChar(drawKeyBoardMetaData);
+  }
+
+  // submit
+  if (cursorPos.collidesWith({19, 3}))
+    return GET_CHAR_SUBMIT;
+
+  //
+  if (cursorPos.collidesWith({13, 3}))
+    return GET_CHAR_DELETE_ALL;
+
+  return ReadChar(drawKeyBoardMetaData);
+}
+
+#endif
+
+//filepath: read\read-string.hpp
+#ifndef READ_READ_STRING_HPP
+#define READ_READ_STRING_HPP
+
+#include "../utils/structs/pos.hpp"
+#include "../utils/structs/draw-keybord-meta-data.hpp"
+#include "../globals.hpp"
+#include "../cursor.hpp"
+#include "./read-char.hpp"
+
+String *ReadString(DrawKeyBoardMetaData drawKeyBoardMetaData)
+{
+  lcd.clear();
+  char out;
+
+  while (true)
+  {
+    out = ReadChar(&drawKeyBoardMetaData);
+
+    if (out == GET_CHAR_LEFT_SHIFT && drawKeyBoardMetaData.writePos > 0)
+    {
+      drawKeyBoardMetaData.writePos--;
+    }
+    else if (out == GET_CHAR_RIGHT_SHIFT && drawKeyBoardMetaData.writePos < drawKeyBoardMetaData.prompt->length())
+    {
+      drawKeyBoardMetaData.writePos++;
+    }
+    else if (out == GET_CHAR_BACKSPACE)
+    {
+      drawKeyBoardMetaData.prompt->remove(drawKeyBoardMetaData.writePos - 1, 1);
+      drawKeyBoardMetaData.writePos--;
+    }
+    else if (out == GET_CHAR_SUBMIT)
+    {
+      break;
+    }
+    else if (out == GET_CHAR_DELETE_ALL)
+    {
+      *drawKeyBoardMetaData.prompt = "";
+      drawKeyBoardMetaData.writePos = 0;
+    }
+    else if (isascii(out))
+    {
+      *drawKeyBoardMetaData.prompt = drawKeyBoardMetaData.prompt->substring(0, drawKeyBoardMetaData.writePos) + out + drawKeyBoardMetaData.prompt->substring(drawKeyBoardMetaData.writePos);
+      drawKeyBoardMetaData.writePos++;
+    };
+
+    delay(RENDERING_FRAME);
+  }
+
+  lcd.clear();
+  lcd.print(drawKeyBoardMetaData.prompt->c_str());
+
+  delay(1000);
+  lcd.clear();
+
+  return drawKeyBoardMetaData.prompt;
+}
+
+#endif
+
+//filepath: utils\index.hpp
+#ifndef UTILS_INDEX_HPP
+#define UTILS_INDEX_HPP
+
+#include "../globals.hpp"
+
+namespace utils
+{
+    void waitForRelease()
+    {
+        while (digitalRead(swPin) != LOW)
+            ;
+        lcd.clear();
+        lcd.setCursor(4, 1);
+        lcd.print("release key");
+        digitalWrite(LED_BUILTIN, HIGH);
+        while (digitalRead(swPin) == LOW)
+            ;
+        digitalWrite(LED_BUILTIN, LOW);
+        lcd.clear();
+    }
+
+    void print(int x, int y, char *text, int length)
+    {
+        for (int i = 0; i < length; i++)
+        {
+            appScreenData[i + x][y] = text[i];
+        }
+    }
+
+    void cantExitApp()
+    {
+        lcd.clear();
+        lcd.setCursor(3, 1);
+        lcd.print("Can't Exit App");
+        delay(2000);
+        lcd.clear();
+    }
+};
+
+#endif
+
+//filepath: utils\structs\clickable.hpp
+#ifndef UTILS_STRUCTS_CLICKABLE_HPP
+#define UTILS_STRUCTS_CLICKABLE_HPP
+
+#include "../../ardulino-os/globals.hpp"
+#include "./pos.hpp"
+
+struct Clickable
+{
+    int y;
+    int start;
+    int end;
+    char *text;
+    int stringLength;
+
+    void Draw()
+    {
+        appScreenData[start][y] = '[';
+
+        for (int i = start + 1; i < end - 1; i++)
+        {
+            appScreenData[i][y] = i - start - 1 < stringLength ? text[i - start - 1] : ' ';
+        }
+
+        appScreenData[end - 1][y] = ']';
+    }
+
+    bool collidesWith(const Pos &other) const
+    {
+        return (other.y - 1) == y && other.x >= start && other.x <= end;
+    }
+};
+
+#endif
+
+//filepath: utils\structs\draw-keybord-meta-data.hpp
+#ifndef UTILS_STRUCTS_DRAW_KEYBOARD_META_DATA_HPP
+#define UTILS_STRUCTS_DRAW_KEYBOARD_META_DATA_HPP
+
+struct DrawKeyBoardMetaData
+{
+    unsigned int writePos;
+    String *prompt;
+};
+
+#endif
+
+//filepath: utils\structs\pos.hpp
+#ifndef UTILS_STRUCTS_POS_HPP
+#define UTILS_STRUCTS_POS_HPP
+
+struct Pos
+{
+  byte x = 0;
+  byte y = 0;
+
+  Pos(byte cx, byte cy)
+  {
+    x = cx;
+    y = cy;
+  }
+
+  bool canDraw()
+  {
+    // is in screen
+    return x > -1 && x < 20 && y < 4 && y > -1;
+  }
+
+  bool collidesWith(const Pos &other)
+  {
+    return x == other.x && y == other.y;
+  }
+};
+
+#endif
+
+//filepath: utils\structs\select.hpp
+#ifndef UTILS_STRUCTS_SELECT_HPP
+#define UTILS_STRUCTS_SELECT_HPP
+
+#include "../../globals.hpp"
+#include "./pos.hpp"
+
+struct Select
+{
+    String *selections;
+    int selectionsLength;
+    int pos;
+
+    void Scroll(signed char direction)
+    {
+        if (direction > 0 && pos < selectionsLength - 1)
+            pos++;
+        else if (direction < 0 && pos > 0)
+            pos--;
+    }
+
+    void Update()
+    {
+        int v = analogRead(yPin);
+    }
+
+    int OnClick(byte y)
+    {
+        return y;
+    }
+};
+
+#endif

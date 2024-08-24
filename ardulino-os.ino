@@ -1,4 +1,3 @@
-#include "./utils/structs/pos.hpp"
 #include "./utils/structs/draw-keybord-meta-data.hpp"
 #include "./globals.hpp"
 #include "./utils/structs/clickable.hpp"
@@ -6,10 +5,6 @@
 #include "./cursor.hpp"
 #include "./read/index.hpp"
 #include "./utils/index.hpp"
-#include "./apps/create-account/index.hpp"
-#include "./apps/login/index.hpp"
-#include "./apps/home/index.hpp"
-#include "./apps/browser/index.hpp"
 #include "./app-renderer.hpp"
 #include "./auth.hpp"
 
