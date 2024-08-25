@@ -7,201 +7,254 @@
 #include "./globals.hpp"
 #include "./utils/structs/pos.hpp"
 #include "./cursor.hpp"
-// apps
-#include "./apps/browser/index.hpp"
-#include "./apps/login/index.hpp"
-#include "./apps/home/index.hpp"
+#include "./utils/index.hpp"
 
 namespace AppRender
 {
     String appOpened = "home";
-    String lastRenderingApp = appOpened;
 
-    void UpdateCurrentApp()
-    {
-        if (appOpened == "browser")
-        {
-            BrowserApp::Update();
-        }
-        else if (appOpened == "login")
-        {
-            LoginApp::Update();
-        }
-        else
-        {
-            HomeApp::Update();
-        }
-    }
-
-    void ExitCurrentApp()
-    {
-        if (!isLoggedIn)
-        {
-            utils::cantExitApp();
-        }
-        else if (appOpened == "home")
-        {
-            utils::cantExitApp();
-        }
-        else if (appOpened == "browser")
-        {
-            BrowserApp::OnExit();
-            appOpened = "home";
-        }
-    }
-
-    void ClickCurrentApp(Pos *pos)
-    {
-        if (appOpened == "login" || !isLoggedIn)
-        {
-            LoginApp::OnClick(*pos);
-        }
-        else if (appOpened == "browser")
-        {
-            BrowserApp::OnClick(*pos);
-        }
-        else
-        {
-            HomeApp::OnClick(*pos);
-        }
-    }
-
-    void ScrollCurrentApp(signed char direction)
-    {
-        if (appOpened == "login" || !isLoggedIn)
-        {
-            LoginApp::Scroll(direction);
-        }
-        else if (appOpened == "browser")
-        {
-            BrowserApp::Scroll(direction);
-        }
-        else
-        {
-            HomeApp::Scroll(direction);
-        }
-    }
-
-    char GetCursorPosChar()
-    {
-        if (Cursor::pos.x < 19 && Cursor::pos.y > 0)
-        {
-            char charUnderCursor = appScreenData[Cursor::pos.x][Cursor::pos.y - 1];
-            if (charUnderCursor == ' ')
-                return '-';
-            else
-                return charUnderCursor;
-        }
-        if (Cursor::pos.x < 16 && Cursor::pos.y == 0)
-        {
-            char charUnderCursor = appTitle[Cursor::pos.x];
-            if (charUnderCursor == ' ')
-                return '-';
-            else
-                return charUnderCursor;
-        }
-        if (Cursor::pos.collidesWith({19, 0}))
-            return 'x';
-        if (Cursor::pos.collidesWith({19, 2}))
-            return '<';
-        if (Cursor::pos.collidesWith({19, 3}))
-            return '>';
-        return '-';
-    }
-
-    void UpdateLoop(Pos pos, byte _)
-    {
-        if (lastRenderingApp != appOpened)
-            ClearAppScreen();
-
-        lastRenderingApp = appOpened;
-
-        // app title
-        lcd.home();
-        for (int i = 0; i < 16; i++)
-        {
-            if (!Cursor::pos.collidesWith({i, 0}))
-            {
-                lcd.setCursor(i, 0);
-                lcd.write(appTitle[i]);
-            }
-        }
-        // space aufter title
-        if (!Cursor::pos.collidesWith({16, 0}))
-        {
-            lcd.setCursor(16, 0);
-            lcd.write(' ');
-        }
-        // draw hovered char
-        if (!Cursor::pos.collidesWith({17, 0}))
-        {
-            lcd.setCursor(17, 0);
-            lcd.write(GetCursorPosChar());
-        }
-        // space after hovered char
-        if (!Cursor::pos.collidesWith({18, 0}))
-        {
-            lcd.setCursor(18, 0);
-            lcd.write(' ');
-        }
-        // exit
-        if (!Cursor::pos.collidesWith({19, 0}))
-        {
-            lcd.setCursor(19, 0);
-            lcd.write('x');
-        }
-
-        // app view
-        for (int y = 0; y < 3; y++)
-        {
-            for (int x = 0; x < 19; x++)
-            {
-                if (!Cursor::pos.collidesWith({x, y + 1}))
-                {
-                    lcd.setCursor(x, y + 1);
-                    lcd.write(appScreenData[x][y]);
-                }
-            }
-        }
-
-        // scrolls
-        lcd.setCursor(19, 1);
-        lcd.write(' ');
-        lcd.setCursor(19, 2);
-        lcd.write('<');
-        lcd.setCursor(19, 3);
-        lcd.write('>');
-    }
-
-    void Update()
-    {
-        Pos cursorPos = Cursor::Get<byte>(UpdateLoop, 0);
-
-        // wait for release
-        while (digitalRead(swPin) == LOW)
-            ;
-
-        // app click
-        if (cursorPos.x < 19 && cursorPos.y > 0)
-        {
-            ClickCurrentApp(&cursorPos);
-        }
-        // exit
-        else if (cursorPos.collidesWith({19, 0}))
-        {
-            ExitCurrentApp();
-        }
-        // scrolling (up, down)
-        else if (cursorPos.collidesWith({19, 2}))
-        {
-            ScrollCurrentApp(1);
-        }
-        else if (cursorPos.collidesWith({19, 3}))
-        {
-            ScrollCurrentApp(-1);
-        }
-    }
+    void UpdateCurrentApp();
+    void ExitCurrentApp();
+    void ClickCurrentApp(Pos *pos);
+    void ScrollCurrentApp(signed char direction);
+    char GetCursorPosChar();
+    void UpdateLoop(Pos pos, byte _);
+    void Update();
+    void SubmitCurrentApp();
+    bool RenderSubmit();
 };
+
+// apps
+#include "./apps/browser/index.hpp"
+#include "./apps/login/index.hpp"
+#include "./apps/home/index.hpp"
+#include "./apps/eeprom-editor/index.hpp"
+
+bool AppRender::RenderSubmit()
+{
+    if (appOpened == "home")
+        return true;
+    if (appOpened == "eeprom-editor")
+        return true;
+    return false;
+}
+
+void AppRender::UpdateCurrentApp()
+{
+    if (appOpened == "browser")
+    {
+        BrowserApp::Update();
+    }
+    else if (appOpened == "login")
+    {
+        LoginApp::Update();
+    }
+    else if (appOpened == "eeprom-editor")
+    {
+        EEPROMEditor::Update();
+    }
+    else
+    {
+        HomeApp::Update();
+    }
+}
+
+void AppRender::ExitCurrentApp()
+{
+    ClearAppScreen();
+    if (!isLoggedIn || appOpened == "login")
+    {
+        utils::cantExitApp();
+    }
+    else if (appOpened == "home")
+    {
+        utils::cantExitApp();
+    }
+    else if (appOpened == "browser")
+    {
+        BrowserApp::OnExit();
+        appOpened = "home";
+    }
+    else
+    {
+        appOpened = "home";
+    }
+}
+
+void AppRender::ClickCurrentApp(Pos *pos)
+{
+    if (appOpened == "login" || !isLoggedIn)
+    {
+        LoginApp::OnClick(*pos);
+    }
+    else if (appOpened == "browser")
+    {
+        BrowserApp::OnClick(*pos);
+    }
+    else if (appOpened == "eeprom-editor")
+    {
+        EEPROMEditor::OnClick(*pos);
+    }
+
+    else
+    {
+        HomeApp::OnClick(*pos);
+    }
+}
+
+void AppRender::ScrollCurrentApp(signed char direction)
+{
+    if (appOpened == "login" || !isLoggedIn)
+    {
+        LoginApp::Scroll(direction);
+    }
+    else if (appOpened == "browser")
+    {
+        BrowserApp::Scroll(direction);
+    }
+    else if (appOpened == "eeprom-editor")
+    {
+        EEPROMEditor::Scroll(direction);
+    }
+    else
+    {
+        HomeApp::Scroll(direction);
+    }
+}
+
+void AppRender::SubmitCurrentApp()
+{
+    if (appOpened == "home")
+    {
+        HomeApp::Submit();
+    }
+    else if (appOpened == "eeprom-editor")
+    {
+        EEPROMEditor::Submit();
+    }
+}
+
+char AppRender::GetCursorPosChar()
+{
+    if (Cursor::pos.x < 19 && Cursor::pos.y > 0)
+    {
+        char charUnderCursor = appScreenData[Cursor::pos.x][Cursor::pos.y - 1];
+        if (charUnderCursor == ' ')
+            return '-';
+        else
+            return charUnderCursor;
+    }
+    if (Cursor::pos.x < 16 && Cursor::pos.y == 0)
+    {
+        char charUnderCursor = appTitle[Cursor::pos.x];
+        if (charUnderCursor == ' ')
+            return '-';
+        else
+            return charUnderCursor;
+    }
+    if (Cursor::pos.collidesWith({19, 0}))
+        return 'x';
+    if (Cursor::pos.collidesWith({19, 1}))
+        return RenderSubmit() ? confirm_charcode : ' ';
+    if (Cursor::pos.collidesWith({19, 2}))
+        return upArrowChar;
+    if (Cursor::pos.collidesWith({19, 3}))
+        return downArrowChar;
+    return '-';
+}
+
+void AppRender::UpdateLoop(Pos pos, byte _)
+{
+    // app title
+    lcd.home();
+    for (int i = 0; i < 16; i++)
+    {
+        if (!Cursor::pos.collidesWith({i, 0}))
+        {
+            lcd.setCursor(i, 0);
+            lcd.write(appTitle[i]);
+        }
+    }
+    // space aufter title
+    if (!Cursor::pos.collidesWith({16, 0}))
+    {
+        lcd.setCursor(16, 0);
+        lcd.write(' ');
+    }
+    // draw hovered char
+    if (!Cursor::pos.collidesWith({17, 0}))
+    {
+        lcd.setCursor(17, 0);
+        lcd.write(GetCursorPosChar());
+    }
+    // space after hovered char
+    if (!Cursor::pos.collidesWith({18, 0}))
+    {
+        lcd.setCursor(18, 0);
+        lcd.write(' ');
+    }
+    // exit
+    if (!Cursor::pos.collidesWith({19, 0}))
+    {
+        lcd.setCursor(19, 0);
+        lcd.write('x');
+    }
+
+    // app view
+    for (int y = 0; y < 3; y++)
+    {
+        for (int x = 0; x < 19; x++)
+        {
+            if (!Cursor::pos.collidesWith({x, y + 1}))
+            {
+                lcd.setCursor(x, y + 1);
+                lcd.write(appScreenData[x][y]);
+            }
+        }
+    }
+
+    // scrolls
+    lcd.setCursor(19, 1);
+    lcd.write(RenderSubmit() ? confirm_charcode : ' ');
+    lcd.setCursor(19, 2);
+    lcd.write(upArrowChar);
+    lcd.setCursor(19, 3);
+    lcd.write(downArrowChar);
+}
+
+void AppRender::Update()
+{
+    Pos cursorPos = Cursor::Get<byte>(UpdateLoop, 0);
+
+    // wait for release
+    while (digitalRead(swPin) == LOW)
+        ;
+
+    // app click
+    if (cursorPos.x < 19 && cursorPos.y > 0)
+    {
+        ClickCurrentApp(&cursorPos);
+    }
+    // exit
+    else if (cursorPos.collidesWith({19, 0}))
+    {
+        ExitCurrentApp();
+    }
+    // submit
+    else if (cursorPos.collidesWith({19, 1}))
+    {
+        SubmitCurrentApp();
+    }
+    // scrolling (up, down)
+    else if (cursorPos.collidesWith({19, 2}))
+    {
+        ScrollCurrentApp(1);
+    }
+    else if (cursorPos.collidesWith({19, 3}))
+    {
+        ScrollCurrentApp(-1);
+    }
+}
 
 #endif
 
@@ -210,6 +263,7 @@ namespace AppRender
 #define APPS_BROWSER_INDEX_HPP
 
 #include "../../utils/structs/pos.hpp"
+#include "../../globals.hpp"
 
 namespace BrowserApp
 {
@@ -217,16 +271,17 @@ namespace BrowserApp
 
     void Update()
     {
+        SetAppTitle("Browser", 7);
     }
 
-    void Scroll(signed char direction) {
-        
+    void Scroll(signed char direction)
+    {
     }
-    void OnExit() {
-
+    void OnExit()
+    {
     }
-    void OnClick(Pos clickPos) {
-        
+    void OnClick(Pos clickPos)
+    {
     }
 };
 
@@ -298,11 +353,99 @@ namespace CreateAccountApp
 
 #endif
 
+//filepath: apps\eeprom-editor\index.hpp
+#ifndef APPS_EEPROM_EDITOR_INDEX_HPP
+#define APPS_EEPROM_EDITOR_INDEX_HPP
+
+#include "../../utils/structs/pos.hpp"
+#include "../../globals.hpp"
+#include "../../app-renderer.hpp"
+#include "../../data/index.hpp"
+#include "../../read/index.hpp"
+
+namespace EEPROMEditor
+{
+    int pos = 8;
+
+    void Scroll(signed char direction)
+    {
+        if (direction > 0 && pos < 512)
+        {
+            pos++;
+        }
+        else if (direction < 0 && pos > 0)
+        {
+            pos--;
+        }
+    }
+
+    void Update()
+    {
+        SetAppTitle("EEPROM Editor", 13);
+
+        // render the data on the top line
+        for (int i = 0; i < 19; i++)
+        {
+            int readPos = pos + i - 10;
+
+            if (readPos < 0 || readPos > 512)
+            {
+                appScreenData[i][1] = ' ';
+                continue;
+            }
+
+            appScreenData[i][1] = EEPROM.read(readPos);
+        }
+
+        // cursor
+        appScreenData[10][2] = '^';
+
+        // clear number digits
+        appScreenData[9][0] = ' ';
+        appScreenData[10][0] = ' ';
+        appScreenData[11][0] = ' ';
+
+        // Render pos number
+        if (pos < 10)
+        {
+            appScreenData[11][0] = 48 + pos;
+        }
+        else if (pos < 100)
+        {
+            appScreenData[10][0] = 48 + (pos / 10); // Tens place
+            appScreenData[11][0] = 48 + (pos % 10); // Units place
+        }
+        else if (pos < 1000)
+        {
+            appScreenData[9][0] = 48 + ((pos / 100));      // Hundreds place
+            appScreenData[10][0] = 48 + ((pos / 10) % 10); // Tens place
+            appScreenData[11][0] = 48 + (pos % 10);        // Units place
+        }
+    }
+
+    void OnClick(Pos pos)
+    {
+    }
+
+    void Submit()
+    {
+        lcd.clear();
+
+        // get the new number
+        EEPROM.write(pos, input::getByte("new val:", EEPROM.read(pos)));
+
+        lcd.clear();
+    }
+};
+
+#endif
+
 //filepath: apps\home\index.hpp
 #ifndef APPS_HOME_HPP
 #define APPS_HOME_HPP
 
 #include "../../globals.hpp"
+#include "../../auth.hpp"
 #include "../../utils/structs/pos.hpp"
 #include "../../utils/structs/select.hpp"
 #include "../../app-renderer.hpp"
@@ -314,13 +457,14 @@ namespace HomeApp
 {
     String state;
 
-    String appOptions[3]{
+    String appOptions[4]{
         "Browser",
+        "EEPROM Editor",
         "Login",
         "Create Account",
     };
 
-    Select appSelect{appOptions, 3, 0};
+    Select appSelect{appOptions, 4, 0};
 
     void Update()
     {
@@ -333,18 +477,34 @@ namespace HomeApp
         appSelect.Scroll(direction);
     }
 
-    void OnClick(Pos clickPos)
+    void OnClick(Pos _)
     {
-        int clickedApp = appSelect.OnClick(clickPos.y);
-
-        if (clickedApp == -1)
-            return;
+        int clickedApp = appSelect.OnClick();
+        ClearAppScreen();
 
         if (appOptions[clickedApp] == "Create Account")
-            return CreateAccountApp::Create();
+        {
+            isLoggedIn = false;
+            CreateAccountApp::Create();
+        }
+        else if (appOptions[clickedApp] == "Login")
+        {
+            isLoggedIn = false;
+            Auth();
+        }
+        else if (appOptions[clickedApp] == "Browser")
+        {
+            AppRender::appOpened = "browser";
+        }
+        else if (appOptions[clickedApp] == "EEPROM Editor")
+        {
+            AppRender::appOpened = "eeprom-editor";
+        }
+    }
 
-        appOptions[clickedApp].toLowerCase();
-        AppRender::appOpened = appOptions[clickedApp];
+    void Submit()
+    {
+        OnClick({19, 1});
     }
 };
 
@@ -400,11 +560,16 @@ namespace LoginApp
         // password button clicked
         if (passwordInput.collidesWith(clickPos))
         {
+
+#ifdef IS_IN_DEBUG_LOGGED_IN
+            isLoggedIn = true;
+            return;
+#endif
+
             CURSOR_OFFSET = 6;
             // get password input
             String *defaultInputStringPtr = new String("");
             auto result = input::ReadString(DrawKeyBoardMetaData{0, defaultInputStringPtr})->c_str();
-            
             // right password
             if (data::auth::isRightPassword(result))
             {
@@ -449,7 +614,8 @@ namespace LoginApp
 #endif
 
 //filepath: ardulino-os.ino
-#include "./utils/structs/pos.hpp"
+#define IS_IN_DEBUG_LOGGED_IN
+
 #include "./utils/structs/draw-keybord-meta-data.hpp"
 #include "./globals.hpp"
 #include "./utils/structs/clickable.hpp"
@@ -457,10 +623,6 @@ namespace LoginApp
 #include "./cursor.hpp"
 #include "./read/index.hpp"
 #include "./utils/index.hpp"
-#include "./apps/create-account/index.hpp"
-#include "./apps/login/index.hpp"
-#include "./apps/home/index.hpp"
-#include "./apps/browser/index.hpp"
 #include "./app-renderer.hpp"
 #include "./auth.hpp"
 
@@ -471,6 +633,8 @@ void setup()
 
   lcd.createChar(cursor_charcode, cursorChar[0]);
   lcd.createChar(confirm_charcode, confirmChar);
+  lcd.createChar(upArrowChar, upArrow);
+  lcd.createChar(downArrowChar, downArrow);
 
   pinMode(swPin, INPUT_PULLUP);
   pinMode(buttonPin, INPUT_PULLUP);
@@ -670,6 +834,14 @@ namespace strings
     return out;
   }
 
+  void writeStringInBuffer(char *buffer, int adress, int length)
+  {
+    for (int i = 0; i < length; i++)
+    {
+      buffer[i] = EEPROM.read(adress + i);
+    }
+  }
+
   void storeString(int adress, String *str, int length)
   {
     for (int i = 0; i < length; i++)
@@ -704,6 +876,8 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 
 #define cursor_charcode 0
 #define confirm_charcode 1
+#define upArrowChar 2
+#define downArrowChar 3
 #define RENDERING_FRAME 100
 
 #define GET_CHAR_NO_CHAR 0
@@ -784,6 +958,29 @@ uint8_t confirmChar[8] = {
     B00010,
     B10100,
     B01100,
+    B00000,
+};
+
+// Define custom characters for up and down arrows
+byte upArrow[8] = {
+    B00000,
+    B00100,
+    B01010,
+    B10001,
+    B00000,
+    B00000,
+    B00000,
+    B00000,
+};
+
+byte downArrow[8] = {
+    B00000,
+    B00000,
+    B00000,
+    B00000,
+    B10001,
+    B01010,
+    B00100,
     B00000,
 };
 
@@ -934,6 +1131,40 @@ void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData *drawKeyBoardMetaData)
 
 #endif
 
+//filepath: read\get-byte.hpp
+#ifndef READ_GET_BYTE_HPP
+#define READ_GET_BYTE_HPP
+
+#include "../globals.hpp"
+#include "../utils/index.hpp"
+
+uint8_t getByte(char *msg, uint8_t byteNum)
+{
+    while (digitalRead(swPin) != LOW)
+    {
+        // new val text
+        lcd.setCursor(6, 1);
+        lcd.print(msg);
+        lcd.setCursor(9, 2);
+        // current number
+        lcd.print("   ");
+        lcd.print(byteNum);
+        // char
+        lcd.setCursor(7, 2);
+        lcd.write(byteNum);
+        // increase or decrease bytenum
+        byteNum += utils::normalizeJoystick(yPin);
+        delay(RENDERING_FRAME);
+    }
+
+    while ((digitalRead(swPin) == LOW))
+        ;
+
+    return byteNum;
+}
+
+#endif
+
 //filepath: read\index.hpp
 #ifndef READ_INDEX_HPP
 #define READ_INDEX_HPP
@@ -944,7 +1175,7 @@ bool currentCharUpperCase = false;
 
 namespace input
 {
-
+#include "./get-byte.hpp"
 #include "./draw-key-board.hpp"
 #include "./read-char.hpp"
 #include "./read-string.hpp"
@@ -1113,6 +1344,28 @@ namespace utils
         delay(2000);
         lcd.clear();
     }
+
+    char *sizeString(char *inp, byte length)
+    {
+        char out[length];
+        for (byte i = 0; i < length; i++)
+            out[i] = inp[i];
+        return out;
+    }
+
+    signed char normalizeJoystick(uint8_t pin)
+    {
+        int val = analogRead(pin);
+        if (val > 700)
+            return 1;
+        if (val < 300)
+            return -1;
+        if (val > 1015)
+            return 2;
+        if (val < 9)
+            return -2;
+        return 0;
+    }
 };
 
 #endif
@@ -1198,30 +1451,59 @@ struct Pos
 #define UTILS_STRUCTS_SELECT_HPP
 
 #include "../../globals.hpp"
+#include "../../cursor.hpp"
+
 #include "./pos.hpp"
 
 struct Select
 {
-    String *selections;
-    int selectionsLength;
-    int pos;
+    String *options;
+    byte optionsLength;
+    byte pos;
 
     void Scroll(signed char direction)
     {
-        if (direction > 0 && pos < selectionsLength - 1)
+        if (direction < 0 && pos < optionsLength - 1)
             pos++;
-        else if (direction < 0 && pos > 0)
+        else if (direction > 0 && pos > 0)
             pos--;
     }
 
     void Update()
     {
-        int v = analogRead(yPin);
+        // add the select
+        appScreenData[0][0] = ' ';
+        appScreenData[0][1] = '>';
+        appScreenData[0][2] = ' ';
+
+        // draw the options
+        for (int optionIndex = 0; optionIndex < 3; optionIndex++)
+        {
+            for (int charIndex = 0; charIndex < 18; charIndex++)
+            {
+                byte optionPos = optionIndex + pos - 1;
+
+                bool isOutOfOptionBound = optionPos < 0 || optionPos > optionsLength - 1;
+                bool charIsntInStringBounds = options[optionPos].length() < charIndex + 1;
+
+                if (isOutOfOptionBound || charIsntInStringBounds)
+                {
+                    appScreenData[charIndex + 1][optionIndex] = ' ';
+                }
+                else
+                {
+                    appScreenData[charIndex + 1][optionIndex] = options[optionPos].charAt(charIndex);
+                }
+            }
+        }
     }
 
-    int OnClick(byte y)
+    byte OnClick()
     {
-        return y;
+        if (pos < 0 || pos > optionsLength - 1)
+            return -1;
+
+        return pos;
     }
 };
 

@@ -3,11 +3,13 @@
 
 #include "../../utils/structs/pos.hpp"
 #include "../../globals.hpp"
+#include "../../app-renderer.hpp"
 #include "../../data/index.hpp"
+#include "../../read/index.hpp"
 
 namespace EEPROMEditor
 {
-    int pos = 98;
+    int pos = 8;
 
     void Scroll(signed char direction)
     {
@@ -46,6 +48,7 @@ namespace EEPROMEditor
         appScreenData[9][0] = ' ';
         appScreenData[10][0] = ' ';
         appScreenData[11][0] = ' ';
+
         // Render pos number
         if (pos < 10)
         {
@@ -66,6 +69,16 @@ namespace EEPROMEditor
 
     void OnClick(Pos pos)
     {
+    }
+
+    void Submit()
+    {
+        lcd.clear();
+
+        // get the new number
+        EEPROM.write(pos, input::getByte("new val:", EEPROM.read(pos)));
+
+        lcd.clear();
     }
 };
 

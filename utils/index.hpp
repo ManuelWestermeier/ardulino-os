@@ -43,6 +43,20 @@ namespace utils
             out[i] = inp[i];
         return out;
     }
+
+    signed char normalizeJoystick(uint8_t pin)
+    {
+        int val = analogRead(pin);
+        if (val > 700)
+            return 1;
+        if (val < 300)
+            return -1;
+        if (val > 1015)
+            return 2;
+        if (val < 9)
+            return -2;
+        return 0;
+    }
 };
 
 #endif

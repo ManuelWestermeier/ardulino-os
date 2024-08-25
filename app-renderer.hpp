@@ -5,6 +5,7 @@
 #include "./globals.hpp"
 #include "./utils/structs/pos.hpp"
 #include "./cursor.hpp"
+#include "./utils/index.hpp"
 
 namespace AppRender
 {
@@ -30,6 +31,8 @@ namespace AppRender
 bool AppRender::RenderSubmit()
 {
     if (appOpened == "home")
+        return true;
+    if (appOpened == "eeprom-editor")
         return true;
     return false;
 }
@@ -70,7 +73,8 @@ void AppRender::ExitCurrentApp()
         BrowserApp::OnExit();
         appOpened = "home";
     }
-    else {
+    else
+    {
         appOpened = "home";
     }
 }
@@ -121,6 +125,10 @@ void AppRender::SubmitCurrentApp()
     if (appOpened == "home")
     {
         HomeApp::Submit();
+    }
+    else if (appOpened == "eeprom-editor")
+    {
+        EEPROMEditor::Submit();
     }
 }
 

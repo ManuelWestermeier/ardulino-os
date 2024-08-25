@@ -7,7 +7,7 @@ bool currentCharUpperCase = false;
 
 namespace input
 {
-
+#include "./get-byte.hpp"
 #include "./draw-key-board.hpp"
 #include "./read-char.hpp"
 #include "./read-string.hpp"
