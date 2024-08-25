@@ -4,12 +4,13 @@
 #include "../globals.hpp"
 #include "../utils/index.hpp"
 
-uint8_t getByte(char *msg, uint8_t byteNum)
+uint8_t getByte(char *msg, uint8_t byteNum, int msgPos = 6)
 {
+    lcd.clear();
     while (digitalRead(swPin) != LOW)
     {
         // new val text
-        lcd.setCursor(6, 1);
+        lcd.setCursor(msgPos, 1);
         lcd.print(msg);
         lcd.setCursor(9, 2);
         // current number
@@ -25,7 +26,7 @@ uint8_t getByte(char *msg, uint8_t byteNum)
 
     while ((digitalRead(swPin) == LOW))
         ;
-
+    lcd.clear();
     return byteNum;
 }
 

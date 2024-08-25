@@ -2,6 +2,7 @@
 #define READ_READ_CHAR_HPP
 
 #include "./draw-key-board.hpp"
+#include "../read/index.hpp"
 
 char ReadChar(DrawKeyBoardMetaData *drawKeyBoardMetaData)
 {
@@ -29,6 +30,12 @@ char ReadChar(DrawKeyBoardMetaData *drawKeyBoardMetaData)
   if (cursorPos.collidesWith({19, 0}))
   {
     return GET_CHAR_RIGHT_SHIFT;
+  }
+
+  //
+  if (cursorPos.collidesWith({11, 3}))
+  {
+    return input::getByte("special char:", '#');
   }
 
   // backspace

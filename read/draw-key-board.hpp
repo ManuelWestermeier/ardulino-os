@@ -54,6 +54,7 @@ void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData *drawKeyBoardMetaData)
     }
   }
 
+  // text cursor
   if (!cursorPos.collidesWith({(CURSOR_OFFSET + 1), 0}))
   {
     lcd.setCursor((CURSOR_OFFSET + 1), 0);
@@ -76,7 +77,8 @@ void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData *drawKeyBoardMetaData)
   }
 
   // clear last row
-  for (int i = 1; i < 19; i++)
+  // clear part bevore buttons
+  for (int i = 1; i < 11; i++)
   {
     if (!cursorPos.collidesWith({i, 3}))
     {
@@ -84,22 +86,51 @@ void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData *drawKeyBoardMetaData)
       lcd.write(' ');
     }
   }
+  // clear between buttons
+  for (int i = 11; i < 19; i++)
+  {
+    // only draw if the cursor isnt on the pos and its every fist of 2
+    if (!cursorPos.collidesWith({i, 3}) && i % 2 == 0)
+    {
+      lcd.setCursor(i, 3);
+      lcd.write(' ');
+    }
+  }
+
+  // non alfabetic characters
+  if (!cursorPos.collidesWith({11, 3}))
+  {
+    lcd.setCursor(11, 3);
+    lcd.write('#');
+  }
 
   // Delete all
-  lcd.setCursor(13, 3);
-  lcd.write('X');
+  if (!cursorPos.collidesWith({13, 3}))
+  {
+    lcd.setCursor(13, 3);
+    lcd.write('X');
+  }
 
   // Uppercase and Lowercase
-  lcd.setCursor(15, 3);
-  lcd.write('x');
+  if (!cursorPos.collidesWith({15, 3}))
+  {
+    lcd.setCursor(15, 3);
+    lcd.write('x');
+  }
 
   // Uppercase and Lowercase
-  lcd.setCursor(17, 3);
-  lcd.write(currentCharUpperCase ? 'a' : 'A');
+  if (!cursorPos.collidesWith({17, 3}))
+  {
+    lcd.setCursor(17, 3);
+    lcd.write(currentCharUpperCase ? 'a' : 'A');
+  }
 
   // confirm
-  lcd.setCursor(19, 3);
-  lcd.write(confirm_charcode);
+  if (!cursorPos.collidesWith({19, 3}))
+  {
+    lcd.setCursor(19, 3);
+    lcd.write(confirm_charcode);
+  }
 
   // selected
   lcd.setCursor(0, 3);
@@ -111,6 +142,10 @@ void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData *drawKeyBoardMetaData)
   else if (cursorPos.y == 0)
   {
     lcd.write(cursorPos.x == 0 ? '<' : (cursorPos.x == 19 ? '>' : '-'));
+  }
+  else if (cursorPos.collidesWith({11, 3}))
+  {
+    lcd.write('#');
   }
   else if (cursorPos.collidesWith({15, 3}))
   {
@@ -129,7 +164,9 @@ void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData *drawKeyBoardMetaData)
     lcd.write(confirm_charcode);
   }
   else
+  {
     lcd.write('-');
+  }
 }
 
 #endif
