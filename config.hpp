@@ -1,0 +1,1 @@
+#define IS_IN_DEBUG_LOGGED_IN
