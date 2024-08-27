@@ -14,15 +14,16 @@ namespace HomeApp
 {
     String state;
 
-    String appOptions[5]{
+    String appOptions[6]{
         "Browser",
         "Flash Light",
-        "EEPROM Editor",
         "Login",
+        "EEPROM Editor",
+        "Memory Editor",
         "Create Account",
     };
 
-    Select appSelect{appOptions, 5, 0};
+    Select appSelect{appOptions, 6, 0};
 
     void Update()
     {
@@ -44,14 +45,20 @@ namespace HomeApp
         {
             AppRender::appOpened = "browser";
         }
-        else if (appOptions[clickedApp] == "EEPROM Editor")
-        {
-            AppRender::appOpened = "eeprom-editor";
-        }
+
         else if (appOptions[clickedApp] == "Flash Light")
         {
             AppRender::appOpened = "flash-light";
         }
+        else if (appOptions[clickedApp] == "EEPROM Editor")
+        {
+            AppRender::appOpened = "eeprom-editor";
+        }
+        else if (appOptions[clickedApp] == "Memory Editor")
+        {
+            AppRender::appOpened = "memory-editor";
+        }
+
         else if (appOptions[clickedApp] == "Create Account")
         {
             isLoggedIn = false;
@@ -64,7 +71,7 @@ namespace HomeApp
         }
     }
 
-    void OnClick(Pos _)
+    void OnClick(Pos)
     {
         SwitchApp();
     }

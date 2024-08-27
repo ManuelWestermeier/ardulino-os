@@ -27,6 +27,7 @@ namespace AppRender
 #include "./apps/login/index.hpp"
 #include "./apps/home/index.hpp"
 #include "./apps/eeprom-editor/index.hpp"
+#include "./apps/memory-editor/index.hpp"
 #include "./apps/flash-light/index.hpp"
 
 bool AppRender::RenderSubmit()
@@ -34,6 +35,8 @@ bool AppRender::RenderSubmit()
     if (appOpened == "home")
         return true;
     if (appOpened == "eeprom-editor")
+        return true;
+    if (appOpened == "memory-editor")
         return true;
     return false;
 }
@@ -55,6 +58,10 @@ void AppRender::UpdateCurrentApp()
     else if (appOpened == "eeprom-editor")
     {
         EEPROMEditor::Update();
+    }
+    else if (appOpened == "memory-editor")
+    {
+        MemoryEditor::Update();
     }
     else
     {
@@ -94,10 +101,6 @@ void AppRender::ClickCurrentApp(Pos *pos)
     {
         BrowserApp::OnClick(*pos);
     }
-    else if (appOpened == "eeprom-editor")
-    {
-        EEPROMEditor::OnClick(*pos);
-    }
     else if (appOpened == "flash-light")
     {
         FlashLightApp::OnClick(*pos);
@@ -122,6 +125,10 @@ void AppRender::ScrollCurrentApp(signed char direction)
     {
         EEPROMEditor::Scroll(direction);
     }
+    else if (appOpened == "memory-editor")
+    {
+        MemoryEditor::Scroll(direction);
+    }
     else
     {
         HomeApp::Scroll(direction);
@@ -134,15 +141,18 @@ void AppRender::SubmitCurrentApp()
     {
         HomeApp::Submit();
     }
-    else if (appOpened == "eeprom-editor")
-    {
-        EEPROMEditor::Submit();
-    }
     else if (appOpened == "flash-light")
     {
         FlashLightApp::Submit();
     }
-    
+    else if (appOpened == "eeprom-editor")
+    {
+        EEPROMEditor::Submit();
+    }
+    else if (appOpened == "memory-editor")
+    {
+        MemoryEditor::Submit();
+    }
 }
 
 char AppRender::GetCursorPosChar()

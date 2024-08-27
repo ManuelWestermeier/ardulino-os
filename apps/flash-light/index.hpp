@@ -41,7 +41,7 @@ namespace FlashLightApp
     {
         // toggle
         isOn = !isOn;
-        digitalWrite(ledPin, isOn);
+        digitalWrite(ledPin, isOn ? HIGH : LOW);
         UpdateUI();
     }
 

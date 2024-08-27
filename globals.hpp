@@ -1,9 +1,13 @@
 #ifndef GLOBALS_HPP
 #define GLOBALS_HPP
 
+
 #include <LiquidCrystal_I2C.h>
 
 LiquidCrystal_I2C lcd(0x27, 20, 4);
+
+//Max memory pointer
+#define MAX_MEM_PTR 2048
 
 // horizontal joystick pin
 #define xPin A0

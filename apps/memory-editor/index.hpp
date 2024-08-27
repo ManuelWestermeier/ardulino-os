@@ -1,19 +1,18 @@
-#ifndef APPS_EEPROM_EDITOR_INDEX_HPP
-#define APPS_EEPROM_EDITOR_INDEX_HPP
+#ifndef APPS_EEPROM_MEMORY_EDITOR_HPP
+#define APPS_EEPROM_MEMORY_EDITOR_HPP
 
 #include "../../utils/structs/pos.hpp"
 #include "../../globals.hpp"
 #include "../../app-renderer.hpp"
-#include "../../data/index.hpp"
 #include "../../read/index.hpp"
 
-namespace EEPROMEditor
+namespace MemoryEditor
 {
-    int pos = 8;
+    int pos = 0;
 
     void Scroll(signed char direction)
     {
-        if (direction > 0 && pos < 512)
+        if (direction > 0 && pos < MAX_MEM_PTR)
         {
             pos++;
         }
@@ -25,20 +24,20 @@ namespace EEPROMEditor
 
     void Update()
     {
-        SetAppTitle("EEPROM Editor", 13);
+        SetAppTitle("Memory Editor", 13);
 
         // render the data on the top line
         for (int i = 0; i < 19; i++)
         {
             int readPos = pos + i - 10;
 
-            if (readPos < 0 || readPos > 512)
+            if (readPos < 0 || readPos > MAX_MEM_PTR)
             {
                 appScreenData[i][1] = ' ';
                 continue;
             }
 
-            appScreenData[i][1] = EEPROM.read(readPos);
+            appScreenData[i][1] = *(byte *)readPos;
         }
 
         // cursor
@@ -65,14 +64,22 @@ namespace EEPROMEditor
             appScreenData[10][0] = 48 + ((pos / 10) % 10); // Tens place
             appScreenData[11][0] = 48 + (pos % 10);        // Units place
         }
+        else if (pos < 10000)
+        {
+            appScreenData[8][0] = 48 + ((pos / 1000));      // Tousends place
+            appScreenData[9][0] = 48 + ((pos / 100) % 10); // Hundreds place
+            appScreenData[10][0] = 48 + ((pos / 10) % 10); // Tens place
+            appScreenData[11][0] = 48 + (pos % 10);        // Units place
+        }
     }
 
     void Submit()
     {
         lcd.clear();
 
-        // get & write the new number
-        EEPROM.write(pos, input::getByte("new val:", EEPROM.read(pos)));
+        // write in memory
+        byte *memPtr = (byte *)pos;
+        *memPtr = pos, input::getByte("new val:", EEPROM.read(*(byte *)pos));
 
         lcd.clear();
     }
