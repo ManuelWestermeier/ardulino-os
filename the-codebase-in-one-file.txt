@@ -29,12 +29,16 @@ namespace AppRender
 #include "./apps/login/index.hpp"
 #include "./apps/home/index.hpp"
 #include "./apps/eeprom-editor/index.hpp"
+#include "./apps/memory-editor/index.hpp"
+#include "./apps/flash-light/index.hpp"
 
 bool AppRender::RenderSubmit()
 {
     if (appOpened == "home")
         return true;
     if (appOpened == "eeprom-editor")
+        return true;
+    if (appOpened == "memory-editor")
         return true;
     return false;
 }
@@ -49,9 +53,17 @@ void AppRender::UpdateCurrentApp()
     {
         LoginApp::Update();
     }
+    else if (appOpened == "flash-light")
+    {
+        FlashLightApp::Update();
+    }
     else if (appOpened == "eeprom-editor")
     {
         EEPROMEditor::Update();
+    }
+    else if (appOpened == "memory-editor")
+    {
+        MemoryEditor::Update();
     }
     else
     {
@@ -91,11 +103,10 @@ void AppRender::ClickCurrentApp(Pos *pos)
     {
         BrowserApp::OnClick(*pos);
     }
-    else if (appOpened == "eeprom-editor")
+    else if (appOpened == "flash-light")
     {
-        EEPROMEditor::OnClick(*pos);
+        FlashLightApp::OnClick(*pos);
     }
-
     else
     {
         HomeApp::OnClick(*pos);
@@ -116,6 +127,10 @@ void AppRender::ScrollCurrentApp(signed char direction)
     {
         EEPROMEditor::Scroll(direction);
     }
+    else if (appOpened == "memory-editor")
+    {
+        MemoryEditor::Scroll(direction);
+    }
     else
     {
         HomeApp::Scroll(direction);
@@ -128,9 +143,17 @@ void AppRender::SubmitCurrentApp()
     {
         HomeApp::Submit();
     }
+    else if (appOpened == "flash-light")
+    {
+        FlashLightApp::Submit();
+    }
     else if (appOpened == "eeprom-editor")
     {
         EEPROMEditor::Submit();
+    }
+    else if (appOpened == "memory-editor")
+    {
+        MemoryEditor::Submit();
     }
 }
 
@@ -423,20 +446,78 @@ namespace EEPROMEditor
         }
     }
 
-    void OnClick(Pos pos)
-    {
-    }
-
     void Submit()
     {
         lcd.clear();
 
-        // get the new number
+        // get & write the new number
         EEPROM.write(pos, input::getByte("new val:", EEPROM.read(pos)));
 
         lcd.clear();
     }
 };
+
+#endif
+
+//filepath: apps\flash-light\index.hpp
+#ifndef APPS_FLASH_LIGHT_INDEX_HPP
+#define APPS_FLASH_LIGHT_INDEX_HPP
+
+#include "../../utils/structs/pos.hpp"
+#include "../../utils/structs/clickable.hpp"
+#include "../../globals.hpp"
+
+namespace FlashLightApp
+{
+    Clickable toggleButton{2, 7, 11, "ON", 2};
+    bool isOn = false;
+
+    void Update()
+    {
+        for (byte i = 0; i < 11; i++)
+        {
+            appScreenData[i + 4][1] = "Flash Light"[i];
+        }
+        toggleButton.Draw();
+    }
+
+    void UpdateUI()
+    {
+        // set ui
+        if (isOn)
+        {
+            toggleButton.text = "OFF";
+            toggleButton.end = 12;
+            toggleButton.stringLength = 3;
+        }
+        else
+        {
+            toggleButton.text = "ON";
+            toggleButton.end = 11;
+            toggleButton.stringLength = 2;
+            appScreenData[11][2] = ' ';
+        }
+    }
+
+    void Toggle()
+    {
+        // toggle
+        isOn = !isOn;
+        digitalWrite(ledPin, isOn ? HIGH : LOW);
+        UpdateUI();
+    }
+
+    void Submit()
+    {
+        Toggle();
+    }
+
+    void OnClick(Pos pos)
+    {
+        if (toggleButton.collidesWith(pos))
+            Toggle();
+    }
+}
 
 #endif
 
@@ -457,14 +538,16 @@ namespace HomeApp
 {
     String state;
 
-    String appOptions[4]{
+    String appOptions[6]{
         "Browser",
-        "EEPROM Editor",
+        "Flash Light",
         "Login",
+        "EEPROM Editor",
+        "Memory Editor",
         "Create Account",
     };
 
-    Select appSelect{appOptions, 4, 0};
+    Select appSelect{appOptions, 6, 0};
 
     void Update()
     {
@@ -477,12 +560,30 @@ namespace HomeApp
         appSelect.Scroll(direction);
     }
 
-    void OnClick(Pos _)
+    void SwitchApp()
     {
         int clickedApp = appSelect.OnClick();
         ClearAppScreen();
 
-        if (appOptions[clickedApp] == "Create Account")
+        if (appOptions[clickedApp] == "Browser")
+        {
+            AppRender::appOpened = "browser";
+        }
+
+        else if (appOptions[clickedApp] == "Flash Light")
+        {
+            AppRender::appOpened = "flash-light";
+        }
+        else if (appOptions[clickedApp] == "EEPROM Editor")
+        {
+            AppRender::appOpened = "eeprom-editor";
+        }
+        else if (appOptions[clickedApp] == "Memory Editor")
+        {
+            AppRender::appOpened = "memory-editor";
+        }
+
+        else if (appOptions[clickedApp] == "Create Account")
         {
             isLoggedIn = false;
             CreateAccountApp::Create();
@@ -492,19 +593,16 @@ namespace HomeApp
             isLoggedIn = false;
             Auth();
         }
-        else if (appOptions[clickedApp] == "Browser")
-        {
-            AppRender::appOpened = "browser";
-        }
-        else if (appOptions[clickedApp] == "EEPROM Editor")
-        {
-            AppRender::appOpened = "eeprom-editor";
-        }
+    }
+
+    void OnClick(Pos)
+    {
+        SwitchApp();
     }
 
     void Submit()
     {
-        OnClick({19, 1});
+        SwitchApp();
     }
 };
 
@@ -608,6 +706,96 @@ namespace LoginApp
             CheckChangePasswordButton(clickPos);
         else
             CheckPasswordInputClickedAndLogin(clickPos);
+    }
+};
+
+#endif
+
+//filepath: apps\memory-editor\index.hpp
+#ifndef APPS_EEPROM_MEMORY_EDITOR_HPP
+#define APPS_EEPROM_MEMORY_EDITOR_HPP
+
+#include "../../utils/structs/pos.hpp"
+#include "../../globals.hpp"
+#include "../../app-renderer.hpp"
+#include "../../read/index.hpp"
+
+namespace MemoryEditor
+{
+    int pos = 0;
+
+    void Scroll(signed char direction)
+    {
+        if (direction > 0 && pos < MAX_MEM_PTR)
+        {
+            pos++;
+        }
+        else if (direction < 0 && pos > 0)
+        {
+            pos--;
+        }
+    }
+
+    void Update()
+    {
+        SetAppTitle("Memory Editor", 13);
+
+        // render the data on the top line
+        for (int i = 0; i < 19; i++)
+        {
+            int readPos = pos + i - 10;
+
+            if (readPos < 0 || readPos > MAX_MEM_PTR)
+            {
+                appScreenData[i][1] = ' ';
+                continue;
+            }
+
+            appScreenData[i][1] = *(byte *)readPos;
+        }
+
+        // cursor
+        appScreenData[10][2] = '^';
+
+        // clear number digits
+        appScreenData[9][0] = ' ';
+        appScreenData[10][0] = ' ';
+        appScreenData[11][0] = ' ';
+
+        // Render pos number
+        if (pos < 10)
+        {
+            appScreenData[11][0] = 48 + pos;
+        }
+        else if (pos < 100)
+        {
+            appScreenData[10][0] = 48 + (pos / 10); // Tens place
+            appScreenData[11][0] = 48 + (pos % 10); // Units place
+        }
+        else if (pos < 1000)
+        {
+            appScreenData[9][0] = 48 + ((pos / 100));      // Hundreds place
+            appScreenData[10][0] = 48 + ((pos / 10) % 10); // Tens place
+            appScreenData[11][0] = 48 + (pos % 10);        // Units place
+        }
+        else if (pos < 10000)
+        {
+            appScreenData[8][0] = 48 + ((pos / 1000));      // Tousends place
+            appScreenData[9][0] = 48 + ((pos / 100) % 10); // Hundreds place
+            appScreenData[10][0] = 48 + ((pos / 10) % 10); // Tens place
+            appScreenData[11][0] = 48 + (pos % 10);        // Units place
+        }
+    }
+
+    void Submit()
+    {
+        lcd.clear();
+
+        // write in memory
+        byte *memPtr = (byte *)pos;
+        *memPtr = pos, input::getByte("new val:", EEPROM.read(*(byte *)pos));
+
+        lcd.clear();
     }
 };
 
@@ -861,9 +1049,13 @@ namespace strings
 #ifndef GLOBALS_HPP
 #define GLOBALS_HPP
 
+
 #include <LiquidCrystal_I2C.h>
 
 LiquidCrystal_I2C lcd(0x27, 20, 4);
+
+//Max memory pointer
+#define MAX_MEM_PTR 2048
 
 // horizontal joystick pin
 #define xPin A0
