@@ -614,8 +614,9 @@ namespace LoginApp
 #endif
 
 //filepath: ardulino-os.ino
-#define IS_IN_DEBUG_LOGGED_IN
+#include "./config.hpp"
 
+#include "./utils/index.hpp"
 #include "./utils/structs/draw-keybord-meta-data.hpp"
 #include "./globals.hpp"
 #include "./utils/structs/clickable.hpp"
@@ -682,6 +683,9 @@ void Auth()
 }
 
 #endif
+
+//filepath: config.hpp
+#define IS_IN_DEBUG_LOGGED_IN
 
 //filepath: cursor.hpp
 #ifndef CURSOR_HPP
@@ -1051,6 +1055,7 @@ void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData *drawKeyBoardMetaData)
     }
   }
 
+  // text cursor
   if (!cursorPos.collidesWith({(CURSOR_OFFSET + 1), 0}))
   {
     lcd.setCursor((CURSOR_OFFSET + 1), 0);
@@ -1073,7 +1078,8 @@ void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData *drawKeyBoardMetaData)
   }
 
   // clear last row
-  for (int i = 1; i < 19; i++)
+  // clear part bevore buttons
+  for (int i = 1; i < 11; i++)
   {
     if (!cursorPos.collidesWith({i, 3}))
     {
@@ -1081,22 +1087,51 @@ void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData *drawKeyBoardMetaData)
       lcd.write(' ');
     }
   }
+  // clear between buttons
+  for (int i = 11; i < 19; i++)
+  {
+    // only draw if the cursor isnt on the pos and its every fist of 2
+    if (!cursorPos.collidesWith({i, 3}) && i % 2 == 0)
+    {
+      lcd.setCursor(i, 3);
+      lcd.write(' ');
+    }
+  }
+
+  // non alfabetic characters
+  if (!cursorPos.collidesWith({11, 3}))
+  {
+    lcd.setCursor(11, 3);
+    lcd.write('#');
+  }
 
   // Delete all
-  lcd.setCursor(13, 3);
-  lcd.write('X');
+  if (!cursorPos.collidesWith({13, 3}))
+  {
+    lcd.setCursor(13, 3);
+    lcd.write('X');
+  }
 
   // Uppercase and Lowercase
-  lcd.setCursor(15, 3);
-  lcd.write('x');
+  if (!cursorPos.collidesWith({15, 3}))
+  {
+    lcd.setCursor(15, 3);
+    lcd.write('x');
+  }
 
   // Uppercase and Lowercase
-  lcd.setCursor(17, 3);
-  lcd.write(currentCharUpperCase ? 'a' : 'A');
+  if (!cursorPos.collidesWith({17, 3}))
+  {
+    lcd.setCursor(17, 3);
+    lcd.write(currentCharUpperCase ? 'a' : 'A');
+  }
 
   // confirm
-  lcd.setCursor(19, 3);
-  lcd.write(confirm_charcode);
+  if (!cursorPos.collidesWith({19, 3}))
+  {
+    lcd.setCursor(19, 3);
+    lcd.write(confirm_charcode);
+  }
 
   // selected
   lcd.setCursor(0, 3);
@@ -1108,6 +1143,10 @@ void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData *drawKeyBoardMetaData)
   else if (cursorPos.y == 0)
   {
     lcd.write(cursorPos.x == 0 ? '<' : (cursorPos.x == 19 ? '>' : '-'));
+  }
+  else if (cursorPos.collidesWith({11, 3}))
+  {
+    lcd.write('#');
   }
   else if (cursorPos.collidesWith({15, 3}))
   {
@@ -1126,7 +1165,9 @@ void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData *drawKeyBoardMetaData)
     lcd.write(confirm_charcode);
   }
   else
+  {
     lcd.write('-');
+  }
 }
 
 #endif
@@ -1138,12 +1179,13 @@ void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData *drawKeyBoardMetaData)
 #include "../globals.hpp"
 #include "../utils/index.hpp"
 
-uint8_t getByte(char *msg, uint8_t byteNum)
+uint8_t getByte(char *msg, uint8_t byteNum, int msgPos = 6)
 {
+    lcd.clear();
     while (digitalRead(swPin) != LOW)
     {
         // new val text
-        lcd.setCursor(6, 1);
+        lcd.setCursor(msgPos, 1);
         lcd.print(msg);
         lcd.setCursor(9, 2);
         // current number
@@ -1159,7 +1201,7 @@ uint8_t getByte(char *msg, uint8_t byteNum)
 
     while ((digitalRead(swPin) == LOW))
         ;
-
+    lcd.clear();
     return byteNum;
 }
 
@@ -1188,6 +1230,7 @@ namespace input
 #define READ_READ_CHAR_HPP
 
 #include "./draw-key-board.hpp"
+#include "../read/index.hpp"
 
 char ReadChar(DrawKeyBoardMetaData *drawKeyBoardMetaData)
 {
@@ -1215,6 +1258,12 @@ char ReadChar(DrawKeyBoardMetaData *drawKeyBoardMetaData)
   if (cursorPos.collidesWith({19, 0}))
   {
     return GET_CHAR_RIGHT_SHIFT;
+  }
+
+  //
+  if (cursorPos.collidesWith({11, 3}))
+  {
+    return input::getByte("special char:", '#');
   }
 
   // backspace

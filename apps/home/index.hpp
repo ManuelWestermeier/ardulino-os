@@ -14,14 +14,15 @@ namespace HomeApp
 {
     String state;
 
-    String appOptions[4]{
+    String appOptions[5]{
         "Browser",
+        "Flash Light",
         "EEPROM Editor",
         "Login",
         "Create Account",
     };
 
-    Select appSelect{appOptions, 4, 0};
+    Select appSelect{appOptions, 5, 0};
 
     void Update()
     {
@@ -34,12 +35,24 @@ namespace HomeApp
         appSelect.Scroll(direction);
     }
 
-    void OnClick(Pos _)
+    void SwitchApp()
     {
         int clickedApp = appSelect.OnClick();
         ClearAppScreen();
 
-        if (appOptions[clickedApp] == "Create Account")
+        if (appOptions[clickedApp] == "Browser")
+        {
+            AppRender::appOpened = "browser";
+        }
+        else if (appOptions[clickedApp] == "EEPROM Editor")
+        {
+            AppRender::appOpened = "eeprom-editor";
+        }
+        else if (appOptions[clickedApp] == "Flash Light")
+        {
+            AppRender::appOpened = "flash-light";
+        }
+        else if (appOptions[clickedApp] == "Create Account")
         {
             isLoggedIn = false;
             CreateAccountApp::Create();
@@ -49,19 +62,16 @@ namespace HomeApp
             isLoggedIn = false;
             Auth();
         }
-        else if (appOptions[clickedApp] == "Browser")
-        {
-            AppRender::appOpened = "browser";
-        }
-        else if (appOptions[clickedApp] == "EEPROM Editor")
-        {
-            AppRender::appOpened = "eeprom-editor";
-        }
+    }
+
+    void OnClick(Pos _)
+    {
+        SwitchApp();
     }
 
     void Submit()
     {
-        OnClick({19, 1});
+        SwitchApp();
     }
 };
 

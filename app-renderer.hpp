@@ -27,6 +27,7 @@ namespace AppRender
 #include "./apps/login/index.hpp"
 #include "./apps/home/index.hpp"
 #include "./apps/eeprom-editor/index.hpp"
+#include "./apps/flash-light/index.hpp"
 
 bool AppRender::RenderSubmit()
 {
@@ -46,6 +47,10 @@ void AppRender::UpdateCurrentApp()
     else if (appOpened == "login")
     {
         LoginApp::Update();
+    }
+    else if (appOpened == "flash-light")
+    {
+        FlashLightApp::Update();
     }
     else if (appOpened == "eeprom-editor")
     {
@@ -93,7 +98,10 @@ void AppRender::ClickCurrentApp(Pos *pos)
     {
         EEPROMEditor::OnClick(*pos);
     }
-
+    else if (appOpened == "flash-light")
+    {
+        FlashLightApp::OnClick(*pos);
+    }
     else
     {
         HomeApp::OnClick(*pos);
@@ -130,6 +138,11 @@ void AppRender::SubmitCurrentApp()
     {
         EEPROMEditor::Submit();
     }
+    else if (appOpened == "flash-light")
+    {
+        FlashLightApp::Submit();
+    }
+    
 }
 
 char AppRender::GetCursorPosChar()
