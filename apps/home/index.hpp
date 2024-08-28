@@ -14,16 +14,17 @@ namespace HomeApp
 {
     String state;
 
-    String appOptions[6]{
+    String appOptions[7]{
         "Browser",
         "Flash Light",
         "Login",
+        "Pin Menager",
         "EEPROM Editor",
         "Memory Editor",
         "Create Account",
     };
 
-    Select appSelect{appOptions, 6, 0};
+    Select appSelect{appOptions, 7, 0};
 
     void Update()
     {
@@ -45,10 +46,13 @@ namespace HomeApp
         {
             AppRender::appOpened = "browser";
         }
-
         else if (appOptions[clickedApp] == "Flash Light")
         {
             AppRender::appOpened = "flash-light";
+        }
+        else if (appOptions[clickedApp] == "Pin Menager")
+        {
+            AppRender::appOpened = "pin-menager";
         }
         else if (appOptions[clickedApp] == "EEPROM Editor")
         {
@@ -58,7 +62,6 @@ namespace HomeApp
         {
             AppRender::appOpened = "memory-editor";
         }
-
         else if (appOptions[clickedApp] == "Create Account")
         {
             isLoggedIn = false;

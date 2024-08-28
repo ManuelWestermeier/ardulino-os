@@ -4,7 +4,7 @@
 #include "../globals.hpp"
 #include "../utils/index.hpp"
 
-uint8_t getByte(char *msg, uint8_t byteNum, int msgPos = 6)
+unsigned char getByte(char *msg, unsigned char byteNum, int msgPos = 6)
 {
     lcd.clear();
     while (digitalRead(swPin) != LOW)

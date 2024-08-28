@@ -44,7 +44,7 @@ namespace utils
         return out;
     }
 
-    signed char normalizeJoystick(uint8_t pin)
+    uint8_t normalizeJoystick(uint8_t pin)
     {
         int val = analogRead(pin);
         if (val > 700)

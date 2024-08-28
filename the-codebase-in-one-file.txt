@@ -31,6 +31,7 @@ namespace AppRender
 #include "./apps/eeprom-editor/index.hpp"
 #include "./apps/memory-editor/index.hpp"
 #include "./apps/flash-light/index.hpp"
+#include "./apps/pin-menager/index.hpp"
 
 bool AppRender::RenderSubmit()
 {
@@ -40,6 +41,9 @@ bool AppRender::RenderSubmit()
         return true;
     if (appOpened == "memory-editor")
         return true;
+    if (appOpened == "pin-menager")
+        return true;
+
     return false;
 }
 
@@ -56,6 +60,10 @@ void AppRender::UpdateCurrentApp()
     else if (appOpened == "flash-light")
     {
         FlashLightApp::Update();
+    }
+    else if (appOpened == "pin-menager")
+    {
+        PinMengerApp::Update();
     }
     else if (appOpened == "eeprom-editor")
     {
@@ -107,6 +115,11 @@ void AppRender::ClickCurrentApp(Pos *pos)
     {
         FlashLightApp::OnClick(*pos);
     }
+    else if (appOpened == "pin-menager")
+    {
+        PinMengerApp::OnClick(*pos);
+    }
+
     else
     {
         HomeApp::OnClick(*pos);
@@ -122,6 +135,10 @@ void AppRender::ScrollCurrentApp(signed char direction)
     else if (appOpened == "browser")
     {
         BrowserApp::Scroll(direction);
+    }
+    else if (appOpened == "pin-menager")
+    {
+        PinMengerApp::Scroll(direction);
     }
     else if (appOpened == "eeprom-editor")
     {
@@ -146,6 +163,10 @@ void AppRender::SubmitCurrentApp()
     else if (appOpened == "flash-light")
     {
         FlashLightApp::Submit();
+    }
+    else if (appOpened == "pin-menager")
+    {
+        PinMengerApp::Submit();
     }
     else if (appOpened == "eeprom-editor")
     {
@@ -538,16 +559,17 @@ namespace HomeApp
 {
     String state;
 
-    String appOptions[6]{
+    String appOptions[7]{
         "Browser",
         "Flash Light",
         "Login",
+        "Pin Menager",
         "EEPROM Editor",
         "Memory Editor",
         "Create Account",
     };
 
-    Select appSelect{appOptions, 6, 0};
+    Select appSelect{appOptions, 7, 0};
 
     void Update()
     {
@@ -569,10 +591,13 @@ namespace HomeApp
         {
             AppRender::appOpened = "browser";
         }
-
         else if (appOptions[clickedApp] == "Flash Light")
         {
             AppRender::appOpened = "flash-light";
+        }
+        else if (appOptions[clickedApp] == "Pin Menager")
+        {
+            AppRender::appOpened = "pin-menager";
         }
         else if (appOptions[clickedApp] == "EEPROM Editor")
         {
@@ -582,7 +607,6 @@ namespace HomeApp
         {
             AppRender::appOpened = "memory-editor";
         }
-
         else if (appOptions[clickedApp] == "Create Account")
         {
             isLoggedIn = false;
@@ -798,6 +822,36 @@ namespace MemoryEditor
         lcd.clear();
     }
 };
+
+#endif
+
+//filepath: apps\pin-menager\index.hpp
+#ifndef APPS_PIN_MENAGERINDEX_HPP
+#define APPS_PIN_MENAGERINDEX_HPP
+
+#include "../../utils/structs/pos.hpp"
+#include "../../utils/structs/clickable.hpp"
+#include "../../globals.hpp"
+
+namespace PinMengerApp
+{
+    void Update()
+    {
+        SetAppTitle("Pin Menager", 11);
+    }
+
+    void OnClick(Pos)
+    {
+    }
+
+    void Scroll(signed char)
+    {
+    }
+
+    void Submit()
+    {
+    }
+}
 
 #endif
 
@@ -1371,7 +1425,7 @@ void DrawKeyBoard(Pos cursorPos, DrawKeyBoardMetaData *drawKeyBoardMetaData)
 #include "../globals.hpp"
 #include "../utils/index.hpp"
 
-uint8_t getByte(char *msg, uint8_t byteNum, int msgPos = 6)
+unsigned char getByte(char *msg, unsigned char byteNum, int msgPos = 6)
 {
     lcd.clear();
     while (digitalRead(swPin) != LOW)
@@ -1594,7 +1648,7 @@ namespace utils
         return out;
     }
 
-    signed char normalizeJoystick(uint8_t pin)
+    uint8_t normalizeJoystick(uint8_t pin)
     {
         int val = analogRead(pin);
         if (val > 700)
