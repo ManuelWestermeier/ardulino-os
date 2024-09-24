@@ -60,13 +60,14 @@ namespace Cursor
   template <typename BypassedType>
   Pos Get(void (*bevorUpdate)(Pos, BypassedType), BypassedType bypassed)
   {
-    static int round = 0;
+    // static int round = 0;
     while (digitalRead(swPin) != LOW)
     {
       bevorUpdate(pos, bypassed);
       Update();
       delay(RENDERING_FRAME);
     }
+    while (digitalRead(swPin) != HIGH);
     return pos;
   }
 };

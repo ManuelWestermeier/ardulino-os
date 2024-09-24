@@ -38,7 +38,7 @@ namespace EEPROMEditor
                 continue;
             }
 
-            appScreenData[i][1] = EEPROM.read(readPos);
+            appScreenData[i][1] = data::readFromEEPROM(readPos);
         }
 
         // cursor
@@ -72,7 +72,7 @@ namespace EEPROMEditor
         lcd.clear();
 
         // get & write the new number
-        EEPROM.write(pos, input::getByte("new val:", EEPROM.read(pos)));
+        data::writeToEEPROM(pos, input::getByte("new val:", data::readFromEEPROM(pos)));
 
         lcd.clear();
     }

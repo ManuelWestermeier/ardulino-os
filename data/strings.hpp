@@ -11,7 +11,7 @@ namespace strings
 
     for (int i = 0; i < length; i++)
     {
-      out[i] = EEPROM.read(adress + i);
+      out[i] = readFromEEPROM(adress + i);
     }
 
     return out;
@@ -21,7 +21,7 @@ namespace strings
   {
     for (int i = 0; i < length; i++)
     {
-      buffer[i] = EEPROM.read(adress + i);
+      buffer[i] = readFromEEPROM(adress + i);
     }
   }
 
@@ -29,7 +29,7 @@ namespace strings
   {
     for (int i = 0; i < length; i++)
     {
-      EEPROM.write(adress + i, str->charAt(i));
+      writeToEEPROM(adress + i, str->charAt(i));
     }
   }
 };

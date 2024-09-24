@@ -11,7 +11,7 @@ namespace auth
 
     bool accountExists()
     {
-        return EEPROM.read(HAS_ACCOUNT_ADRESS) == byte(IS_AUTH_BYTE);
+        return readFromEEPROM(HAS_ACCOUNT_ADRESS) == byte(IS_AUTH_BYTE);
     }
 
     char *getPassword()
@@ -22,7 +22,7 @@ namespace auth
     void createAccount(String *password)
     {
         strings::storeString(PASSWORD_ADRESS, password, 6);
-        EEPROM.write(HAS_ACCOUNT_ADRESS, byte(IS_AUTH_BYTE));
+        writeToEEPROM(HAS_ACCOUNT_ADRESS, byte(IS_AUTH_BYTE));
         isLoggedIn = true;
     }
 
@@ -30,7 +30,7 @@ namespace auth
     {
         for (int i = 0; i < 6; i++)
         {
-            if (password[i] != EEPROM.read(PASSWORD_ADRESS + i))
+            if (password[i] != readFromEEPROM(PASSWORD_ADRESS + i))
                 return false;
         }
         return true;

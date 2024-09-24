@@ -9,7 +9,7 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 
 //Max memory pointer
 #define MAX_MEM_PTR 2048
-#define ESPROM_SIZE 512
+#define EEPROM_SIZE 512
 
 // horizontal joystick pin
 #define xPin 32
@@ -154,7 +154,7 @@ void Init() {
   Serial.begin(9600);
   Serial.println("Starting");
   //eeprom
-  EEPROM.begin(ESPROM_SIZE);
+  EEPROM.begin(EEPROM_SIZE);
   //create characters
   lcd.createChar(cursor_charcode, cursorChar[0]);
   lcd.createChar(confirm_charcode, confirmChar);

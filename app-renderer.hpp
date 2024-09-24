@@ -36,7 +36,7 @@ bool AppRender::RenderSubmit()
 {
     if (appOpened == "home")
         return true;
-    if (appOpened == "")
+    if (appOpened == "flash-light")
         return true;
     if (appOpened == "eeprom-editor")
         return true;
@@ -184,7 +184,7 @@ void AppRender::SubmitCurrentApp()
     {
         ClockApp::Submit();
     }
-    
+
     else if (appOpened == "pin-menager")
     {
         PinMengerApp::Submit();

@@ -1,7 +1,7 @@
 #ifndef UTILS_STRUCTS_CLICKABLE_HPP
 #define UTILS_STRUCTS_CLICKABLE_HPP
 
-#include "../../ardulino-os/globals.hpp"
+#include "../../globals.hpp"
 #include "./pos.hpp"
 
 struct Clickable

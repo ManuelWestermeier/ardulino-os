@@ -3,6 +3,17 @@
 
 namespace data
 {
+    void writeToEEPROM(int address, byte value)
+    {
+        EEPROM.write(address, value);
+        EEPROM.commit();
+    }
+
+    byte readFromEEPROM(int address)
+    {
+        return EEPROM.read(address);
+    }
+
 #include "./strings.hpp"
 #include "./auth.hpp"
 };
