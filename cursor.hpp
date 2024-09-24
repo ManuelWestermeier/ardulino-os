@@ -3,6 +3,7 @@
 
 #include "./globals.hpp"
 #include "./utils/structs/pos.hpp"
+#include "./utils/index.hpp"
 
 namespace Cursor
 {
@@ -30,27 +31,27 @@ namespace Cursor
 
   void Update()
   {
-    int h = analogRead(xPin); // get the horizontal joystick input
-    int v = analogRead(yPin); // get the vertical joystick input
+    int h = utils::normalizeJoystick(xPin); // get the horizontal joystick input
+    int v = utils::normalizeJoystick(yPin); // get the vertical joystick input
 
     // move cursor
-    if (h > 700 && pos.x < 19)
+    if (h > 0 && pos.x < 19)
       pos.x++;
 
-    if (h < 300 && pos.x > 0)
+    if (h < 0 && pos.x > 0)
       pos.x--;
 
-    if (v < 300 && pos.y < 3)
+    if (v < 0 && pos.y < 3)
       pos.y++;
 
-    if (v > 700 && pos.y > 0)
+    if (v > 0 && pos.y > 0)
       pos.y--;
 
     // move cursor fast
-    if (h > 1015 && pos.x < 19)
+    if (h > 1 && pos.x < 19)
       pos.x++;
 
-    if (h < 9 && pos.x > 0)
+    if (h < -1 && pos.x > 0)
       pos.x--;
 
     Draw();

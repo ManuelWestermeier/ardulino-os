@@ -13,12 +13,6 @@
 
 void setup() {
   Init();
-  while (true) {
-    lcd.clear();
-    lcd.home();
-    lcd.print(utils::normalizeJoystick(xPin));
-    delay(100);
-  }
   Auth();
 }
 
