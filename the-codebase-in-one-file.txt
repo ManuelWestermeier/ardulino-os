@@ -32,10 +32,13 @@ namespace AppRender
 #include "./apps/memory-editor/index.hpp"
 #include "./apps/flash-light/index.hpp"
 #include "./apps/pin-menager/index.hpp"
+#include "./apps/clock/index.hpp"
 
 bool AppRender::RenderSubmit()
 {
     if (appOpened == "home")
+        return true;
+    if (appOpened == "")
         return true;
     if (appOpened == "eeprom-editor")
         return true;
@@ -61,6 +64,11 @@ void AppRender::UpdateCurrentApp()
     {
         FlashLightApp::Update();
     }
+    else if (appOpened == "clock")
+    {
+        ClockApp::Update();
+    }
+
     else if (appOpened == "pin-menager")
     {
         PinMengerApp::Update();
@@ -115,6 +123,11 @@ void AppRender::ClickCurrentApp(Pos *pos)
     {
         FlashLightApp::OnClick(*pos);
     }
+    else if (appOpened == "clock")
+    {
+        ClockApp::OnClick(*pos);
+    }
+
     else if (appOpened == "pin-menager")
     {
         PinMengerApp::OnClick(*pos);
@@ -140,6 +153,11 @@ void AppRender::ScrollCurrentApp(signed char direction)
     {
         PinMengerApp::Scroll(direction);
     }
+    else if (appOpened == "clock")
+    {
+        ClockApp::Scroll(direction);
+    }
+
     else if (appOpened == "eeprom-editor")
     {
         EEPROMEditor::Scroll(direction);
@@ -164,6 +182,11 @@ void AppRender::SubmitCurrentApp()
     {
         FlashLightApp::Submit();
     }
+    else if (appOpened == "clock")
+    {
+        ClockApp::Submit();
+    }
+    
     else if (appOpened == "pin-menager")
     {
         PinMengerApp::Submit();
@@ -331,6 +354,44 @@ namespace BrowserApp
 
 #endif
 
+//filepath: apps\clock\index.hpp
+#ifndef APPS_CLOCK_INDEX_HPP
+#define APPS_CLOCK_INDEX_HPP
+
+#include "../../utils/structs/pos.hpp"
+#include "../../globals.hpp"
+
+enum ClockState
+{
+    Time,
+    Delay,
+};
+
+namespace ClockApp
+{
+    ClockState state = Time;
+
+    void Update()
+    {
+        SetAppTitle("Clock", 5);
+    }
+
+    void Scroll(unsigned char direction)
+    {
+        
+    }
+
+    void OnClick(Pos clickPos)
+    {
+    }
+
+    void Submit()
+    {
+    }
+};
+
+#endif
+
 //filepath: apps\create-account\index.hpp
 #ifndef APPS_CREATE_ACCOUNT_INDEX_HPP
 #define APPS_CREATE_ACCOUNT_INDEX_HPP
@@ -363,7 +424,8 @@ namespace CreateAccountApp
         lcd.setCursor(0, 2);
         lcd.print("(6 characters long)");
         utils::waitForRelease();
-        String password = *input::ReadString(DrawKeyBoardMetaData{0, &String("")});
+        auto passwordStringPtr = new String("");
+        String password = *input::ReadString(DrawKeyBoardMetaData{0, passwordStringPtr});
         if (password.length() != 6) // check length
         {
             lcd.clear();
@@ -378,7 +440,8 @@ namespace CreateAccountApp
         lcd.setCursor(2, 1);
         lcd.print("rewrite password");
         utils::waitForRelease();
-        String password2 = *input::ReadString(DrawKeyBoardMetaData{0, &String("")});
+        auto passwordStringPtr2 = new String("");
+        String password2 = *input::ReadString(DrawKeyBoardMetaData{0, passwordStringPtr2});
 
         // if they arent the same retry
         if (password != password2)
@@ -392,6 +455,8 @@ namespace CreateAccountApp
         }
 
         data::auth::createAccount(&password);
+        delete passwordStringPtr;
+        delete passwordStringPtr2;
     }
 };
 
@@ -559,9 +624,10 @@ namespace HomeApp
 {
     String state;
 
-    String appOptions[7]{
+    String appOptions[8]{
         "Browser",
         "Flash Light",
+        "Clock",
         "Login",
         "Pin Menager",
         "EEPROM Editor",
@@ -569,7 +635,7 @@ namespace HomeApp
         "Create Account",
     };
 
-    Select appSelect{appOptions, 7, 0};
+    Select appSelect{appOptions, 8, 0};
 
     void Update()
     {
@@ -594,6 +660,10 @@ namespace HomeApp
         else if (appOptions[clickedApp] == "Flash Light")
         {
             AppRender::appOpened = "flash-light";
+        }
+        else if (appOptions[clickedApp] == "Clock")
+        {
+            AppRender::appOpened = "clock";
         }
         else if (appOptions[clickedApp] == "Pin Menager")
         {
@@ -869,28 +939,18 @@ namespace PinMengerApp
 #include "./app-renderer.hpp"
 #include "./auth.hpp"
 
-void setup()
-{
-  lcd.init();
-  lcd.backlight();
-
-  lcd.createChar(cursor_charcode, cursorChar[0]);
-  lcd.createChar(confirm_charcode, confirmChar);
-  lcd.createChar(upArrowChar, upArrow);
-  lcd.createChar(downArrowChar, downArrow);
-
-  pinMode(swPin, INPUT_PULLUP);
-  pinMode(buttonPin, INPUT_PULLUP);
-  pinMode(ledPin, OUTPUT);
-
-  digitalWrite(LED_BUILTIN, LOW);
-
-  InitData();
+void setup() {
+  Init();
+  while (true) {
+    lcd.clear();
+    lcd.home();
+    lcd.print(utils::normalizeJoystick(xPin));
+    delay(100);
+  }
   Auth();
 }
 
-void loop()
-{
+void loop() {
   AppRender::UpdateCurrentApp();
   AppRender::Update();
 }
@@ -927,7 +987,10 @@ void Auth()
 #endif
 
 //filepath: config.hpp
+#include "Arduino.h"
+
 #define IS_IN_DEBUG_LOGGED_IN
+#define LED_BUILTIN 2
 
 //filepath: cursor.hpp
 #ifndef CURSOR_HPP
@@ -1033,7 +1096,7 @@ namespace auth
         isLoggedIn = true;
     }
 
-    bool isRightPassword(char *password)
+    bool isRightPassword(const char *password)
     {
         for (int i = 0; i < 6; i++)
         {
@@ -1049,8 +1112,6 @@ namespace auth
 //filepath: data\index.hpp
 #ifndef DATA_INDEX_HPP
 #define DATA_INDEX_HPP
-
-#include <EEPROM.h>
 
 namespace data
 {
@@ -1103,27 +1164,26 @@ namespace strings
 #ifndef GLOBALS_HPP
 #define GLOBALS_HPP
 
-
+#include <Wire.h>
+#include <EEPROM.h>
 #include <LiquidCrystal_I2C.h>
 
 LiquidCrystal_I2C lcd(0x27, 20, 4);
 
 //Max memory pointer
 #define MAX_MEM_PTR 2048
+#define ESPROM_SIZE 512
 
 // horizontal joystick pin
-#define xPin A0
+#define xPin 32
 // vertical joystick pin
-#define yPin A1
+#define yPin 33
 // joystick button pin
-#define swPin 2
-// Push-Button pin
-#define buttonPin 3
+#define swPin 4
 // LED pin
-#define ledPin 9
+#define ledPin LED_BUILTIN
 
 // input
-
 #define cursor_charcode 0
 #define confirm_charcode 1
 #define upArrowChar 2
@@ -1138,8 +1198,9 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 #define GET_CHAR_DELETE_ALL 5
 
 String keyBoardLayout[2] = {
-    "abcdefghij0123456789",
-    "klmnopqrstuvwxyz .?!"};
+  "abcdefghij0123456789",
+  "klmnopqrstuvwxyz .?!"
+};
 
 int CURSOR_OFFSET = 15;
 
@@ -1153,23 +1214,20 @@ int CURSOR_OFFSET = 15;
 char appScreenData[19][3];
 char appTitle[16];
 
-void SetAppTitle(char *title, int length)
-{
-    for (int i = 0; i < 16; i++)
-    {
-        if (i < length)
-            appTitle[i] = title[i];
-        else
-            appTitle[i] = ' ';
-    }
+void SetAppTitle(char *title, int length) {
+  for (int i = 0; i < 16; i++) {
+    if (i < length)
+      appTitle[i] = title[i];
+    else
+      appTitle[i] = ' ';
+  }
 }
 
-void ClearAppScreen()
-{
+void ClearAppScreen() {
 
-    for (int y = 0; y < 3; y++)
-        for (int x = 0; x < 19; x++)
-            appScreenData[x][y] = ' ';
+  for (int y = 0; y < 3; y++)
+    for (int x = 0; x < 19; x++)
+      appScreenData[x][y] = ' ';
 }
 
 // auth
@@ -1179,67 +1237,97 @@ bool isLoggedIn = false;
 // custum characters
 
 uint8_t cursorChar[2][8] = {
-    {
-        B00000,
-        B00100,
-        B01110,
-        B11111,
-        B00100,
-        B00100,
-        B00100,
-        B00000,
-    },
-    {
-        B00000,
-        B00100,
-        B01110,
-        B10101,
-        B00100,
-        B00100,
-        B00100,
-        B00000,
-    }};
+  {
+    B00000,
+    B00100,
+    B01110,
+    B11111,
+    B00100,
+    B00100,
+    B00100,
+    B00000,
+  },
+  {
+    B00000,
+    B00100,
+    B01110,
+    B10101,
+    B00100,
+    B00100,
+    B00100,
+    B00000,
+  }
+};
 
 uint8_t confirmChar[8] = {
-    B00000,
-    B00001,
-    B00001,
-    B00010,
-    B00010,
-    B10100,
-    B01100,
-    B00000,
+  B00000,
+  B00001,
+  B00001,
+  B00010,
+  B00010,
+  B10100,
+  B01100,
+  B00000,
 };
 
 // Define custom characters for up and down arrows
 byte upArrow[8] = {
-    B00000,
-    B00100,
-    B01010,
-    B10001,
-    B00000,
-    B00000,
-    B00000,
-    B00000,
+  B00000,
+  B00100,
+  B01010,
+  B10001,
+  B00000,
+  B00000,
+  B00000,
+  B00000,
 };
 
 byte downArrow[8] = {
-    B00000,
-    B00000,
-    B00000,
-    B00000,
-    B10001,
-    B01010,
-    B00100,
-    B00000,
+  B00000,
+  B00000,
+  B00000,
+  B00000,
+  B10001,
+  B01010,
+  B00100,
+  B00000,
 };
 
-void InitData()
-{
-    for (int i = 0; i < 16; i++)
-        appTitle[i] = ' ';
+int testIndex = 0;
+void test() {
+  testIndex++;
+  lcd.clear();
+  lcd.home();
+  lcd.print(testIndex);
+  delay(1000);
+}
 
-    ClearAppScreen();
+void InitData() {
+  for (int i = 0; i < 16; i++)
+    appTitle[i] = ' ';
+
+  ClearAppScreen();
+}
+
+void Init() {
+  //lcd display
+  lcd.init();
+  lcd.backlight();
+  //serial
+  Serial.begin(9600);
+  Serial.println("Starting");
+  //eeprom
+  EEPROM.begin(ESPROM_SIZE);
+  //create characters
+  lcd.createChar(cursor_charcode, cursorChar[0]);
+  lcd.createChar(confirm_charcode, confirmChar);
+  lcd.createChar(upArrowChar, upArrow);
+  lcd.createChar(downArrowChar, downArrow);
+  //pin modes
+  pinMode(swPin, INPUT_PULLUP);
+  pinMode(ledPin, OUTPUT);
+  //init screen data
+  InitData();
 }
 
 #endif
@@ -1441,7 +1529,22 @@ unsigned char getByte(char *msg, unsigned char byteNum, int msgPos = 6)
         lcd.setCursor(7, 2);
         lcd.write(byteNum);
         // increase or decrease bytenum
-        byteNum += utils::normalizeJoystick(yPin);
+        auto verticalJoystick = utils::normalizeJoystick(yPin);
+        //no positive overflow
+        if ((byteNum == 253 && verticalJoystick == 2) || (byteNum == 254 && verticalJoystick == 1))
+        {
+            byteNum = 0;
+        }
+        //no negative overflow
+        if ((byteNum == 3 && verticalJoystick == -2) || (byteNum == 2 && verticalJoystick == -1))
+        {
+            byteNum = 255;
+        }
+        else
+        {
+            byteNum += verticalJoystick;
+        }
+
         delay(RENDERING_FRAME);
     }
 
@@ -1509,7 +1612,7 @@ char ReadChar(DrawKeyBoardMetaData *drawKeyBoardMetaData)
   //
   if (cursorPos.collidesWith({11, 3}))
   {
-    return input::getByte("special char:", '#');
+    return input::getByte("special char:", '#', 3);
   }
 
   // backspace
@@ -1609,58 +1712,59 @@ String *ReadString(DrawKeyBoardMetaData drawKeyBoardMetaData)
 
 namespace utils
 {
-    void waitForRelease()
-    {
-        while (digitalRead(swPin) != LOW)
-            ;
-        lcd.clear();
-        lcd.setCursor(4, 1);
-        lcd.print("release key");
-        digitalWrite(LED_BUILTIN, HIGH);
-        while (digitalRead(swPin) == LOW)
-            ;
-        digitalWrite(LED_BUILTIN, LOW);
-        lcd.clear();
-    }
+  void waitForRelease()
+  {
+    while (digitalRead(swPin) != LOW)
+      ;
+    lcd.clear();
+    lcd.setCursor(4, 1);
+    lcd.print("release key");
+    digitalWrite(LED_BUILTIN, HIGH);
+    while (digitalRead(swPin) == LOW)
+      ;
+    digitalWrite(LED_BUILTIN, LOW);
+    lcd.clear();
+  }
 
-    void print(int x, int y, char *text, int length)
+  void print(int x, int y, char *text, int length)
+  {
+    for (int i = 0; i < length; i++)
     {
-        for (int i = 0; i < length; i++)
-        {
-            appScreenData[i + x][y] = text[i];
-        }
+      appScreenData[i + x][y] = text[i];
     }
+  }
 
-    void cantExitApp()
-    {
-        lcd.clear();
-        lcd.setCursor(3, 1);
-        lcd.print("Can't Exit App");
-        delay(2000);
-        lcd.clear();
-    }
+  void cantExitApp()
+  {
+    lcd.clear();
+    lcd.setCursor(3, 1);
+    lcd.print("Can't Exit App");
+    delay(2000);
+    lcd.clear();
+  }
 
-    char *sizeString(char *inp, byte length)
-    {
-        char out[length];
-        for (byte i = 0; i < length; i++)
-            out[i] = inp[i];
-        return out;
-    }
+  char *sizeString(char *inp, byte length)
+  {
+    char out[length];
+    for (byte i = 0; i < length; i++)
+      out[i] = inp[i];
+    return out;
+  }
 
-    uint8_t normalizeJoystick(uint8_t pin)
-    {
-        int val = analogRead(pin);
-        if (val > 700)
-            return 1;
-        if (val < 300)
-            return -1;
-        if (val > 1015)
-            return 2;
-        if (val < 9)
-            return -2;
-        return 0;
-    }
+  int8_t normalizeJoystick(uint8_t pin)
+  {
+    int val = analogRead(pin);
+    if (val > 4090) // Close to the maximum for a 12-bit ADC
+      return 2;
+    if (val < 5) // Close to the minimum
+      return -2;
+    if (val > 3500) // Close to the upper range
+      return 1;
+    if (val < 500) // Close to the lower range
+      return -1;
+    return 0;
+  }
+
 };
 
 #endif
