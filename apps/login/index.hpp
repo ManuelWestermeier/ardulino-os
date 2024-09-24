@@ -47,12 +47,6 @@ namespace LoginApp
         // password button clicked
         if (passwordInput.collidesWith(clickPos))
         {
-
-#ifdef IS_IN_DEBUG_LOGGED_IN
-            isLoggedIn = true;
-            return;
-#endif
-
             CURSOR_OFFSET = 6;
             // get password input
             String *defaultInputStringPtr = new String("");

@@ -28,6 +28,9 @@ namespace auth
 
     bool isRightPassword(const char *password)
     {
+#if IS_IN_DEBUG_LOGGED_IN
+        return true;
+#endif
         for (int i = 0; i < 6; i++)
         {
             if (password[i] != readFromEEPROM(PASSWORD_ADRESS + i))
