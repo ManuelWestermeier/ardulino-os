@@ -26,7 +26,7 @@ namespace auth
         isLoggedIn = true;
     }
 
-    bool isRightPassword(char *password)
+    bool isRightPassword(const char *password)
     {
         for (int i = 0; i < 6; i++)
         {

@@ -11,28 +11,18 @@
 #include "./app-renderer.hpp"
 #include "./auth.hpp"
 
-void setup()
-{
-  lcd.init();
-  lcd.backlight();
-
-  lcd.createChar(cursor_charcode, cursorChar[0]);
-  lcd.createChar(confirm_charcode, confirmChar);
-  lcd.createChar(upArrowChar, upArrow);
-  lcd.createChar(downArrowChar, downArrow);
-
-  pinMode(swPin, INPUT_PULLUP);
-  pinMode(buttonPin, INPUT_PULLUP);
-  pinMode(ledPin, OUTPUT);
-
-  digitalWrite(LED_BUILTIN, LOW);
-
-  InitData();
+void setup() {
+  Init();
+  while (true) {
+    lcd.clear();
+    lcd.home();
+    lcd.print(utils::normalizeJoystick(xPin));
+    delay(100);
+  }
   Auth();
 }
 
-void loop()
-{
+void loop() {
   AppRender::UpdateCurrentApp();
   AppRender::Update();
 }

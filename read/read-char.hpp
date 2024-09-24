@@ -35,7 +35,7 @@ char ReadChar(DrawKeyBoardMetaData *drawKeyBoardMetaData)
   //
   if (cursorPos.collidesWith({11, 3}))
   {
-    return input::getByte("special char:", '#');
+    return input::getByte("special char:", '#', 3);
   }
 
   // backspace

@@ -20,7 +20,22 @@ unsigned char getByte(char *msg, unsigned char byteNum, int msgPos = 6)
         lcd.setCursor(7, 2);
         lcd.write(byteNum);
         // increase or decrease bytenum
-        byteNum += utils::normalizeJoystick(yPin);
+        auto verticalJoystick = utils::normalizeJoystick(yPin);
+        //no positive overflow
+        if ((byteNum == 253 && verticalJoystick == 2) || (byteNum == 254 && verticalJoystick == 1))
+        {
+            byteNum = 0;
+        }
+        //no negative overflow
+        if ((byteNum == 3 && verticalJoystick == -2) || (byteNum == 2 && verticalJoystick == -1))
+        {
+            byteNum = 255;
+        }
+        else
+        {
+            byteNum += verticalJoystick;
+        }
+
         delay(RENDERING_FRAME);
     }
 

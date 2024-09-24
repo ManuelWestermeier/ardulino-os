@@ -14,9 +14,10 @@ namespace HomeApp
 {
     String state;
 
-    String appOptions[7]{
+    String appOptions[8]{
         "Browser",
         "Flash Light",
+        "Clock",
         "Login",
         "Pin Menager",
         "EEPROM Editor",
@@ -24,7 +25,7 @@ namespace HomeApp
         "Create Account",
     };
 
-    Select appSelect{appOptions, 7, 0};
+    Select appSelect{appOptions, 8, 0};
 
     void Update()
     {
@@ -49,6 +50,10 @@ namespace HomeApp
         else if (appOptions[clickedApp] == "Flash Light")
         {
             AppRender::appOpened = "flash-light";
+        }
+        else if (appOptions[clickedApp] == "Clock")
+        {
+            AppRender::appOpened = "clock";
         }
         else if (appOptions[clickedApp] == "Pin Menager")
         {

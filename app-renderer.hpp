@@ -30,10 +30,13 @@ namespace AppRender
 #include "./apps/memory-editor/index.hpp"
 #include "./apps/flash-light/index.hpp"
 #include "./apps/pin-menager/index.hpp"
+#include "./apps/clock/index.hpp"
 
 bool AppRender::RenderSubmit()
 {
     if (appOpened == "home")
+        return true;
+    if (appOpened == "")
         return true;
     if (appOpened == "eeprom-editor")
         return true;
@@ -59,6 +62,11 @@ void AppRender::UpdateCurrentApp()
     {
         FlashLightApp::Update();
     }
+    else if (appOpened == "clock")
+    {
+        ClockApp::Update();
+    }
+
     else if (appOpened == "pin-menager")
     {
         PinMengerApp::Update();
@@ -113,6 +121,11 @@ void AppRender::ClickCurrentApp(Pos *pos)
     {
         FlashLightApp::OnClick(*pos);
     }
+    else if (appOpened == "clock")
+    {
+        ClockApp::OnClick(*pos);
+    }
+
     else if (appOpened == "pin-menager")
     {
         PinMengerApp::OnClick(*pos);
@@ -138,6 +151,11 @@ void AppRender::ScrollCurrentApp(signed char direction)
     {
         PinMengerApp::Scroll(direction);
     }
+    else if (appOpened == "clock")
+    {
+        ClockApp::Scroll(direction);
+    }
+
     else if (appOpened == "eeprom-editor")
     {
         EEPROMEditor::Scroll(direction);
@@ -162,6 +180,11 @@ void AppRender::SubmitCurrentApp()
     {
         FlashLightApp::Submit();
     }
+    else if (appOpened == "clock")
+    {
+        ClockApp::Submit();
+    }
+    
     else if (appOpened == "pin-menager")
     {
         PinMengerApp::Submit();

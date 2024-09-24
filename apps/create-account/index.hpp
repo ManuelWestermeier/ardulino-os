@@ -29,7 +29,8 @@ namespace CreateAccountApp
         lcd.setCursor(0, 2);
         lcd.print("(6 characters long)");
         utils::waitForRelease();
-        String password = *input::ReadString(DrawKeyBoardMetaData{0, &String("")});
+        auto passwordStringPtr = new String("");
+        String password = *input::ReadString(DrawKeyBoardMetaData{0, passwordStringPtr});
         if (password.length() != 6) // check length
         {
             lcd.clear();
@@ -44,7 +45,8 @@ namespace CreateAccountApp
         lcd.setCursor(2, 1);
         lcd.print("rewrite password");
         utils::waitForRelease();
-        String password2 = *input::ReadString(DrawKeyBoardMetaData{0, &String("")});
+        auto passwordStringPtr2 = new String("");
+        String password2 = *input::ReadString(DrawKeyBoardMetaData{0, passwordStringPtr2});
 
         // if they arent the same retry
         if (password != password2)
@@ -58,6 +60,8 @@ namespace CreateAccountApp
         }
 
         data::auth::createAccount(&password);
+        delete passwordStringPtr;
+        delete passwordStringPtr2;
     }
 };
 
