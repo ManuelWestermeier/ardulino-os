@@ -7,54 +7,55 @@
 
 namespace FlashLightApp
 {
-    Clickable toggleButton{2, 7, 11, "ON", 2};
-    bool isOn = false;
+  Clickable toggleButton{2, 7, 11, "ON", 2};
+  bool isOn = false;
 
-    void Update()
+  void Update()
+  {
+    SetAppTitle("Flash Light", 11);
+    for (byte i = 0; i < 11; i++)
     {
-        for (byte i = 0; i < 11; i++)
-        {
-            appScreenData[i + 4][1] = "Flash Light"[i];
-        }
-        toggleButton.Draw();
+      appScreenData[i + 4][1] = "Flash Light"[i];
     }
+    toggleButton.Draw();
+  }
 
-    void UpdateUI()
+  void UpdateUI()
+  {
+    // set ui
+    if (isOn)
     {
-        // set ui
-        if (isOn)
-        {
-            toggleButton.text = "OFF";
-            toggleButton.end = 12;
-            toggleButton.stringLength = 3;
-        }
-        else
-        {
-            toggleButton.text = "ON";
-            toggleButton.end = 11;
-            toggleButton.stringLength = 2;
-            appScreenData[11][2] = ' ';
-        }
+      toggleButton.text = "OFF";
+      toggleButton.end = 12;
+      toggleButton.stringLength = 3;
     }
+    else
+    {
+      toggleButton.text = "ON";
+      toggleButton.end = 11;
+      toggleButton.stringLength = 2;
+      appScreenData[11][2] = ' ';
+    }
+  }
 
-    void Toggle()
-    {
-        // toggle
-        isOn = !isOn;
-        digitalWrite(ledPin, isOn ? HIGH : LOW);
-        UpdateUI();
-    }
+  void Toggle()
+  {
+    // toggle
+    isOn = !isOn;
+    digitalWrite(ledPin, isOn ? HIGH : LOW);
+    UpdateUI();
+  }
 
-    void Submit()
-    {
-        Toggle();
-    }
+  void Submit()
+  {
+    Toggle();
+  }
 
-    void OnClick(Pos pos)
-    {
-        if (toggleButton.collidesWith(pos))
-            Toggle();
-    }
+  void OnClick(Pos pos)
+  {
+    if (toggleButton.collidesWith(pos))
+      Toggle();
+  }
 }
 
 #endif
