@@ -47,13 +47,13 @@ namespace utils
   int8_t normalizeJoystick(uint8_t pin)
   {
     int val = analogRead(pin);
-    if (val > 4090) // Close to the maximum for a 12-bit ADC
+    if (val == 4095) // Close to the maximum for a 12-bit ADC
       return 2;
-    if (val < 5) // Close to the minimum
+    if (val == 0) // Close to the minimum
       return -2;
-    if (val > 3500) // Close to the upper range
+    if (val > 3000) // Close to the upper range
       return 1;
-    if (val < 500) // Close to the lower range
+    if (val < 2000) // Close to the lower range
       return -1;
     return 0;
   }
