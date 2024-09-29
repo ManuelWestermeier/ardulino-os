@@ -8,10 +8,10 @@ char ReadChar(DrawKeyBoardMetaData *drawKeyBoardMetaData)
 {
   Pos cursorPos = Cursor::Get<DrawKeyBoardMetaData *>(DrawKeyBoard, drawKeyBoardMetaData);
 
-  digitalWrite(LED_BUILTIN, HIGH);
+  digitalWrite(ledPin, HIGH);
   while (digitalRead(swPin) == LOW)
     ;
-  digitalWrite(LED_BUILTIN, LOW);
+  digitalWrite(ledPin, LOW);
 
   // characters
   if (cursorPos.y == 1 || cursorPos.y == 2)

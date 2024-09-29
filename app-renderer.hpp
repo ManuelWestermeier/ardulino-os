@@ -24,6 +24,7 @@ namespace AppRender
 
 // apps
 #include "./apps/browser/index.hpp"
+#include "./apps/wifi/index.hpp"
 #include "./apps/login/index.hpp"
 #include "./apps/home/index.hpp"
 #include "./apps/eeprom-editor/index.hpp"
@@ -44,19 +45,21 @@ bool AppRender::RenderSubmit()
         return true;
     if (appOpened == "pin-menager")
         return true;
+    if (appOpened == "wifi")
+        return true;
 
     return false;
 }
 
 void AppRender::UpdateCurrentApp()
 {
-    if (appOpened == "browser")
-    {
-        BrowserApp::Update();
-    }
-    else if (appOpened == "login")
+    if (!isLoggedIn)
     {
         LoginApp::Update();
+    }
+    else if (appOpened == "browser")
+    {
+        BrowserApp::Update();
     }
     else if (appOpened == "flash-light")
     {
@@ -66,7 +69,10 @@ void AppRender::UpdateCurrentApp()
     {
         ClockApp::Update();
     }
-
+    else if (appOpened == "wifi")
+    {
+        WifiApp::Update();
+    }
     else if (appOpened == "pin-menager")
     {
         PinMengerApp::Update();
@@ -94,7 +100,9 @@ void AppRender::ExitCurrentApp()
     }
     else if (appOpened == "home")
     {
-        utils::cantExitApp();
+        appOpened = "login";
+        isLoggedIn = false;
+        Auth();
     }
     else if (appOpened == "browser")
     {
@@ -105,6 +113,7 @@ void AppRender::ExitCurrentApp()
     {
         appOpened = "home";
     }
+    ClearAppScreen();
 }
 
 void AppRender::ClickCurrentApp(Pos *pos)
@@ -120,6 +129,10 @@ void AppRender::ClickCurrentApp(Pos *pos)
     else if (appOpened == "flash-light")
     {
         FlashLightApp::OnClick(*pos);
+    }
+    else if (appOpened == "wifi")
+    {
+        WifiApp::OnClick(*pos);
     }
     else if (appOpened == "clock")
     {
@@ -146,6 +159,10 @@ void AppRender::ScrollCurrentApp(signed char direction)
     else if (appOpened == "browser")
     {
         BrowserApp::Scroll(direction);
+    }
+    else if (appOpened == "wifi")
+    {
+        WifiApp::Scroll(direction);
     }
     else if (appOpened == "pin-menager")
     {
@@ -179,6 +196,10 @@ void AppRender::SubmitCurrentApp()
     else if (appOpened == "flash-light")
     {
         FlashLightApp::Submit();
+    }
+    else if (appOpened == "wifi")
+    {
+        WifiApp::Submit();
     }
     else if (appOpened == "clock")
     {
@@ -230,6 +251,7 @@ char AppRender::GetCursorPosChar()
 
 void AppRender::UpdateLoop(Pos pos, byte _)
 {
+    UpdateCurrentApp();
     // app title
     lcd.home();
     for (int i = 0; i < 16; i++)

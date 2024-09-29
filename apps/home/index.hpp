@@ -2,6 +2,7 @@
 #define APPS_HOME_HPP
 
 #include "../../globals.hpp"
+#include "../../cursor.hpp"
 #include "../../auth.hpp"
 #include "../../utils/structs/pos.hpp"
 #include "../../utils/structs/select.hpp"
@@ -14,10 +15,11 @@ namespace HomeApp
 {
     String state;
 
-    String appOptions[8]{
-        "Browser",
+    String appOptions[9] = {
         "Flash Light",
+        "Browser",
         "Clock",
+        "Wifi",
         "Login",
         "Pin Menager",
         "EEPROM Editor",
@@ -25,11 +27,12 @@ namespace HomeApp
         "Create Account",
     };
 
-    Select appSelect{appOptions, 8, 0};
+    Select appSelect{appOptions, 9, 1};
 
     void Update()
     {
         SetAppTitle("Home", 4);
+        // update select
         appSelect.Update();
     }
 
@@ -50,6 +53,10 @@ namespace HomeApp
         else if (appOptions[clickedApp] == "Flash Light")
         {
             AppRender::appOpened = "flash-light";
+        }
+        else if (appOptions[clickedApp] == "Wifi")
+        {
+            AppRender::appOpened = "wifi";
         }
         else if (appOptions[clickedApp] == "Clock")
         {
@@ -74,6 +81,7 @@ namespace HomeApp
         }
         else if (appOptions[clickedApp] == "Login")
         {
+            AppRender::appOpened = "login";
             isLoggedIn = false;
             Auth();
         }

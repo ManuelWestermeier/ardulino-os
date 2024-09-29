@@ -14,18 +14,23 @@ struct Select
 
     void Scroll(signed char direction)
     {
-        if (direction < 0 && pos < optionsLength - 1)
+        if (direction < 0 && pos + 1 < optionsLength - 1 && pos - 1 < optionsLength - 1)
             pos++;
-        else if (direction > 0 && pos > 0)
+        else if (direction > 0 && pos + 1 > 0 && pos - 1 > 0)
             pos--;
     }
 
+    byte cursorPos = 1;
     void Update()
     {
+        // set the cursor pos only if the cursor is on screen data 0-3
+        cursorPos = Cursor::pos.y == 0 || Cursor::pos.x == 19 ? cursorPos : Cursor::pos.y - 1;
         // add the select
         appScreenData[0][0] = ' ';
-        appScreenData[0][1] = '>';
+        appScreenData[0][1] = ' ';
         appScreenData[0][2] = ' ';
+        // set the pointer
+        appScreenData[0][cursorPos] = '>';
 
         // draw the options
         for (int optionIndex = 0; optionIndex < 3; optionIndex++)
@@ -51,10 +56,12 @@ struct Select
 
     byte OnClick()
     {
-        if (pos < 0 || pos > optionsLength - 1)
+        byte returnPos = pos + cursorPos - 1;
+
+        if (returnPos < 0 || returnPos > optionsLength - 1)
             return -1;
 
-        return pos;
+        return returnPos;
     }
 };
 

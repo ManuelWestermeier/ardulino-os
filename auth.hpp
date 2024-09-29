@@ -23,6 +23,7 @@ void Auth()
             AppRender::Update();
         }
     }
+    AppRender::appOpened = "home";
     ClearAppScreen();
 }
 

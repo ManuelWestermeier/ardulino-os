@@ -2,6 +2,7 @@
 #define APPS_LOGIN_HPP
 
 #include "../../globals.hpp"
+#include "../../config.hpp"
 #include "../../read/index.hpp"
 #include "../../utils/structs/pos.hpp"
 #include "../../utils/structs/clickable.hpp"
@@ -48,11 +49,16 @@ namespace LoginApp
         if (passwordInput.collidesWith(clickPos))
         {
             CURSOR_OFFSET = 6;
-            // get password input
             String *defaultInputStringPtr = new String("");
+// no password in debug mode
+#if IS_IN_DEBUG_LOGGED_IN
+            if (true)
+#else
+            // get password input
             auto result = input::ReadString(DrawKeyBoardMetaData{0, defaultInputStringPtr})->c_str();
-            // right password
+            // is right password
             if (data::auth::isRightPassword(result))
+#endif
             {
                 isLoggedIn = true;
                 lcd.clear();
