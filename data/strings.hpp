@@ -11,7 +11,7 @@ namespace strings
 
     for (int i = 0; i < length; i++)
     {
-      out[i] = readFromEEPROM(adress + i);
+      out[i] = data::readFromEEPROM(adress + i);
     }
 
     return out;
@@ -21,7 +21,7 @@ namespace strings
   {
     for (int i = 0; i < length; i++)
     {
-      buffer[i] = readFromEEPROM(adress + i);
+      buffer[i] = data::readFromEEPROM(adress + i);
     }
   }
 
@@ -29,7 +29,7 @@ namespace strings
   {
     for (int i = 0; i < length; i++)
     {
-      writeToEEPROM(adress + i, str->charAt(i));
+      data::writeToEEPROM(adress + i, str->charAt(i));
     }
   }
 };

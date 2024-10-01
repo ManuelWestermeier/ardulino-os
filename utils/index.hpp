@@ -58,6 +58,26 @@ namespace utils
     return 0;
   }
 
+  String setStringSize(const String &str, int size)
+  {
+    int length = str.length();
+    if (length == size)
+      return str; // Return by value
+
+    if (length > size)
+    {
+      return str.substring(0, size); // Return a trimmed version by value
+    }
+
+    String newStr;
+    for (int i = 0; i < size; i++)
+    {
+      newStr += i < length ? str.charAt(i) : ' '; // Pad with spaces if needed
+    }
+
+    return newStr; // Return the new string by value
+  }
+
 };
 
 #endif

@@ -6,17 +6,17 @@
 
 struct Clickable
 {
-    int y;
-    int start;
-    int end;
+    byte y;
+    byte start;
+    byte end;
     char *text;
-    int stringLength;
+    byte stringLength;
 
     void Draw()
     {
         appScreenData[start][y] = '[';
 
-        for (int i = start + 1; i < end - 1; i++)
+        for (byte i = start + 1; i < end - 1; i++)
         {
             appScreenData[i][y] = i - start - 1 < stringLength ? text[i - start - 1] : ' ';
         }

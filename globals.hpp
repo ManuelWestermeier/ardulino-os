@@ -2,6 +2,7 @@
 #define GLOBALS_HPP
 
 #include <Wire.h>
+#include <WiFi.h>
 #include <EEPROM.h>
 #include <LiquidCrystal_I2C.h>
 
@@ -77,12 +78,17 @@ bool isLoggedIn = false;
 #include "./data/characters.hpp"
 
 int testIndex = 0;
-void test()
+void test(char *title = "")
 {
   testIndex++;
   lcd.clear();
   lcd.home();
+  lcd.print(title);
+  lcd.setCursor(0, 1);
   lcd.print(testIndex);
+
+  Serial.println(title);
+  Serial.println(testIndex);
   delay(1000);
 }
 

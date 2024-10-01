@@ -11,6 +11,7 @@ namespace AppRender
 {
     String appOpened = "home";
 
+    void UpdateView();
     void UpdateCurrentApp();
     void ExitCurrentApp();
     void ClickCurrentApp(Pos *pos);
@@ -249,7 +250,23 @@ char AppRender::GetCursorPosChar()
     return '-';
 }
 
-void AppRender::UpdateLoop(Pos pos, byte _)
+void AppRender::UpdateView()
+{
+    // app view
+    for (int y = 0; y < 3; y++)
+    {
+        for (int x = 0; x < 19; x++)
+        {
+            if (!Cursor::pos.collidesWith({x, y + 1}))
+            {
+                lcd.setCursor(x, y + 1);
+                lcd.write(appScreenData[x][y]);
+            }
+        }
+    }
+}
+
+void AppRender::UpdateLoop(Pos pos, byte)
 {
     UpdateCurrentApp();
     // app title
@@ -287,19 +304,7 @@ void AppRender::UpdateLoop(Pos pos, byte _)
         lcd.write('x');
     }
 
-    // app view
-    for (int y = 0; y < 3; y++)
-    {
-        for (int x = 0; x < 19; x++)
-        {
-            if (!Cursor::pos.collidesWith({x, y + 1}))
-            {
-                lcd.setCursor(x, y + 1);
-                lcd.write(appScreenData[x][y]);
-            }
-        }
-    }
-
+    UpdateView();
     // scrolls
     lcd.setCursor(19, 1);
     lcd.write(RenderSubmit() ? confirm_charcode : ' ');

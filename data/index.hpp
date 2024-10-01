@@ -1,6 +1,8 @@
 #ifndef DATA_INDEX_HPP
 #define DATA_INDEX_HPP
 
+#include "../globals.hpp"
+
 namespace data
 {
     void writeToEEPROM(int address, byte value)
