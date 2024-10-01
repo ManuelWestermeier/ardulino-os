@@ -13,7 +13,7 @@ namespace EEPROMEditor
 
     void Scroll(signed char direction)
     {
-        if (direction > 0 && pos < 512)
+        if (direction > 0 && pos < EEPROM_SIZE)
         {
             pos++;
         }
@@ -32,7 +32,7 @@ namespace EEPROMEditor
         {
             int readPos = pos + i - 10;
 
-            if (readPos < 0 || readPos > 512)
+            if (readPos < 0 || readPos > EEPROM_SIZE)
             {
                 appScreenData[i][1] = ' ';
                 continue;
