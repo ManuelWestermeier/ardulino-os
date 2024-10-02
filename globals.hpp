@@ -1,10 +1,14 @@
 #ifndef GLOBALS_HPP
 #define GLOBALS_HPP
 
+#include <FS.h>
+#include <LittleFS.h>
 #include <Wire.h>
+#include <map>
 #include <WiFi.h>
 #include <EEPROM.h>
 #include <LiquidCrystal_I2C.h>
+#include "utils/structs/stored-map.hpp"
 
 LiquidCrystal_I2C lcd(0x27, 20, 4);
 
@@ -110,6 +114,7 @@ void Init()
   Serial.println("Starting");
   // eeprom
   EEPROM.begin(EEPROM_SIZE);
+  FlashHashMap::begin();
   // create characters
   lcd.createChar(cursor_charcode, cursorChar[0]);
   lcd.createChar(confirm_charcode, confirmChar);

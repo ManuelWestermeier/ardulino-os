@@ -3,7 +3,6 @@
 
 #include "../utils/structs/select.hpp"
 #include "../globals.hpp"
-#include <WiFi.h> // Ensure WiFi library is included
 
 int WifiScanStart(
     bool showHidden = false,
@@ -34,9 +33,9 @@ Select *GetWifiNetworkSelect(int networkCount)
         Text(1, 1, "Allocation Failed").Draw();
         AppRender::UpdateView();
         delay(1000);
-        delete wifiSelect; // Clean up wifiSelect
+        delete wifiSelect;    // Clean up wifiSelect
         wifiSelect = nullptr; // Set pointer to nullptr after deletion
-        return nullptr;    // Return null pointer if allocation failed
+        return nullptr;       // Return null pointer if allocation failed
     }
 
     // Fill the SSID list
