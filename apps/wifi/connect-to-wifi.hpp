@@ -38,8 +38,6 @@ void WifiApp::ConnectToWifi()
         {
         }
 
-        CURSOR_OFFSET = 5;
-
         // Check if the network is open (no password required)
         bool isOpenNetwork = (WiFi.encryptionType(wifiIndex) == WIFI_AUTH_OPEN);
 
@@ -60,7 +58,10 @@ void WifiApp::ConnectToWifi()
             lcd.print("Enter password:");
             delay(1000);
 
-            password = input::ReadString({0, &defaultPassword}); // Read user input
+            // get password length
+            CURSOR_OFFSET = defaultPassword.length() > 15 || defaultPassword.length() < 8 ? 15 : defaultPassword.length();
+            // metadata
+            password = input::ReadString({defaultPassword.length(), &defaultPassword}); // Read user input
 
             // Guard clause: check if the password is null or empty
             if (password == nullptr || password->length() == 0)
@@ -91,6 +92,11 @@ void WifiApp::ConnectToWifi()
                 lcd.clear();
                 lcd.setCursor(0, 1);
                 lcd.print("Connection Failed!");
+                if (!isOpenNetwork)
+                {
+                    lcd.setCursor(0, 2);
+                    lcd.print("Try to rewrite password!");
+                }
                 delay(2000);    // Display failure message
                 wifiIndex = -2; // Reset selection
                 state = 0;

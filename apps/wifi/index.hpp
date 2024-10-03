@@ -14,8 +14,11 @@
 
 namespace WifiApp
 {
-    Select *wifiSelect = nullptr;                          // Dynamically allocated Select object for WiFi networks
-    Clickable startScanButton{1, 1, 11, "WifiScan", 8};    // Start WiFi scan button
+    Select *wifiSelect = nullptr; // Dynamically allocated Select object for WiFi networks
+    // home page
+    Clickable startScanButton{1, 1, 11, "WifiScan", 8}; // Start WiFi scan button
+    Clickable fastConnectButton{2, 1, 10, "Connect", 7};
+    // wifi page
     Clickable connectToWifiButton{1, 1, 10, "Connect", 7}; // Connect button
     Clickable abortWifiButton{2, 1, 8, "Abort", 5};        // Abort button (Corrected label)
 
@@ -52,6 +55,7 @@ namespace WifiApp
     }
 
     void ConnectToWifi();
+    void FastConnect();
 
     void OnClick(Pos pos)
     {
@@ -67,10 +71,19 @@ namespace WifiApp
                 state = 0;
             }
         }
-        else if (state == 0 && startScanButton.collidesWith(pos))
+        else if (state == 0)
         {
-            state = 1;        // Change state to scanning
-            ClearAppScreen(); // Clear the screen before scanning
+            if (startScanButton.collidesWith(pos))
+            {
+                state = 1;        // Change state to scanning
+                ClearAppScreen(); // Clear the screen before scanning
+            }
+            else if (fastConnectButton.collidesWith(pos))
+            {
+                FastConnect();
+                state = 0; // Change state to scanning
+                ClearAppScreen();
+            }
         }
         else if (state == 1 && wifiSelect != nullptr)
         {
@@ -80,6 +93,7 @@ namespace WifiApp
 }
 
 #include "./connect-to-wifi.hpp"
+#include "./fast-connect.hpp"
 #include "./update.hpp"
 
 #endif
