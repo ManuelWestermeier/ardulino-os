@@ -1,4 +1,7 @@
-#include "../../globals.hpp"
+#ifndef APPS_WIFI_UPDATE_HPP
+#define APPS_WIFI_UPDATE_HPP
+
+#include "./index.hpp"
 
 void WifiApp::Update()
 {
@@ -97,3 +100,5 @@ void WifiApp::Update()
         state = 0;
     }
 }
+
+#endif //

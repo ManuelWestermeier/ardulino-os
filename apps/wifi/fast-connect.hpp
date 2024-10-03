@@ -1,3 +1,9 @@
+#ifndef APPS_WIFI_FAST_CONNECT_HPP
+#define APPS_WIFI_FAST_CONNECT_HPP
+
+#include "./connect-to-wifi.hpp"
+#include "./index.hpp"
+
 void WifiApp::FastConnect()
 {
     try
@@ -157,3 +163,5 @@ void WifiApp::FastConnect()
         state = 0;
     }
 }
+
+#endif // APPS_WIFI_FAST_CONNECT_HPP

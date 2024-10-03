@@ -1,5 +1,9 @@
+#ifndef APPS_WIFI_CONNECT_TO_WIFI_HPP
+#define APPS_WIFI_CONNECT_TO_WIFI_HPP
+
 #include "../../globals.hpp"
 
+#include "./index.hpp"
 #include "../../utils/structs/stored-map.hpp"
 
 FlashHashMap wifisConnected("wifis");
@@ -143,3 +147,5 @@ void WifiApp::ConnectToWifi()
         state = 0;
     }
 }
+
+#endif

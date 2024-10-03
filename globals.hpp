@@ -1,14 +1,10 @@
 #ifndef GLOBALS_HPP
 #define GLOBALS_HPP
 
-#include <FS.h>
-#include <LittleFS.h>
-#include <Wire.h>
-#include <map>
-#include <WiFi.h>
-#include <EEPROM.h>
-#include <LiquidCrystal_I2C.h>
-#include "utils/structs/stored-map.hpp"
+#include "./extern.hpp"
+#include "./utils/structs/stored-map.hpp"
+#include "./wifi/async-connect.hpp"
+#include "./data/characters.hpp"
 
 LiquidCrystal_I2C lcd(0x27, 20, 4);
 
@@ -26,10 +22,6 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 #define ledPin LED_BUILTIN
 
 // input
-#define cursor_charcode 0
-#define confirm_charcode 1
-#define upArrowChar 2
-#define downArrowChar 3
 #define RENDERING_FRAME 100
 
 #define GET_CHAR_NO_CHAR 0
@@ -125,6 +117,7 @@ void Init()
   pinMode(ledPin, OUTPUT);
   // init screen data
   InitData();
+  AsyncWifiConnect();
 }
 
 #endif

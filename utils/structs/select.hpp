@@ -3,7 +3,6 @@
 
 #include "../../globals.hpp"
 #include "../../cursor.hpp"
-
 #include "./pos.hpp"
 
 struct Select

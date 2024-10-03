@@ -16,10 +16,10 @@ namespace HomeApp
     String state;
 
     String appOptions[9] = {
-        "Flash Light",
+        "Wifi",
         "Browser",
         "Clock",
-        "Wifi",
+        "Flash Light",
         "Login",
         "Pin Menager",
         "EEPROM Editor",
