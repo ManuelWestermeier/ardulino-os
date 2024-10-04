@@ -22,6 +22,8 @@
                 "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.4\\libraries\\Network\\src",
                 "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.4\\libraries\\EEPROM\\src",
                 "C:\\Users\\manue\\Documents\\Arduino\\libraries\\LiquidCrystal_I2C",
+                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.4\\libraries\\HTTPClient\\src",
+                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.4\\libraries\\NetworkClientSecure\\src",
                 "c:\\users\\manue\\appdata\\local\\arduino15\\packages\\esp32\\tools\\esp-x32\\2302\\xtensa-esp32-elf\\include\\c++\\12.2.0",
                 "c:\\users\\manue\\appdata\\local\\arduino15\\packages\\esp32\\tools\\esp-x32\\2302\\xtensa-esp32-elf\\include\\c++\\12.2.0\\xtensa-esp32-elf",
                 "c:\\users\\manue\\appdata\\local\\arduino15\\packages\\esp32\\tools\\esp-x32\\2302\\xtensa-esp32-elf\\include\\c++\\12.2.0\\backward",

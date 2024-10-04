@@ -6,22 +6,21 @@
 
 namespace BrowserApp
 {
-    String state;
-
-    void Update()
+    namespace State
     {
-        SetAppTitle("Browser", 7);
+
     }
 
-    void Scroll(signed char direction)
-    {
-    }
-    void OnExit()
-    {
-    }
-    void OnClick(Pos clickPos)
-    {
-    }
+    // functions
+    void Update();
+    void Scroll(signed char direction);
+    void OnExit();
+    void OnClick(Pos clickPos);
 };
+
+#include "./update.hpp"
+#include "./scroll.hpp"
+#include "./on-exit.hpp"
+#include "./on-click.hpp"
 
 #endif

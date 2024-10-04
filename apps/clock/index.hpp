@@ -3,17 +3,10 @@
 
 #include "../../utils/structs/pos.hpp"
 #include "../../globals.hpp"
-
-enum ClockState
-{
-    Time,
-    Delay,
-};
+#include "../../time.hpp"
 
 namespace ClockApp
 {
-    ClockState state = Time;
-
     void Update()
     {
         SetAppTitle("Clock", 5);
@@ -21,7 +14,6 @@ namespace ClockApp
 
     void Scroll(unsigned char direction)
     {
-        
     }
 
     void OnClick(Pos clickPos)
