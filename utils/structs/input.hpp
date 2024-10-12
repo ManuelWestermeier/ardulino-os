@@ -47,7 +47,7 @@ struct Input
         if (clickPosition.y - 1 == y && clickPosition.x >= start && clickPosition.x <= end)
         {
             // Open the input method and update the value
-            value = *input::ReadString(DrawKeyBoardMetaData{value.length() == 0 ? 0 : value.length() - 1, &value});
+            value = *input::ReadString(DrawKeyBoardMetaData{value.length(), &value});
         }
     }
 };
