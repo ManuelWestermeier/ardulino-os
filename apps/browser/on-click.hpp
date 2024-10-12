@@ -8,10 +8,17 @@
 
 void BrowserApp::OnClick(Pos clickPos)
 {
-    if (WiFi.status() != WL_CONNECTED && connectToWfifButton.collidesWith(clickPos))
+    if (WiFi.status() != WL_CONNECTED) // Fixed typo here
     {
-        AppRender::appOpened = "wifi";
+        if (connectToWifiButton.collidesWith(clickPos))
+            AppRender::appOpened = "wifi";
+
+        return;
     }
+
+    // With Internet
+
+    goToViewInput.OnClick(clickPos);
 }
 
 #endif

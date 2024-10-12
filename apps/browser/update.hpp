@@ -9,9 +9,9 @@ bool BrowserApp::WaitForConnected()
     static bool wasConnected;
     if (WiFi.status() != WL_CONNECTED)
     {
-        // render ofline UI
+        // Render offline UI
         noWifiText.Draw();
-        connectToWfifButton.Draw();
+        connectToWifiButton.Draw();  // Fixed typo here
         wasConnected = WiFi.status() != WL_CONNECTED;
         return false;
     }
@@ -30,6 +30,11 @@ void BrowserApp::Update()
 
     if (!WaitForConnected())
         return;
+
+    if (State::appPage == Home)  // Fixed appState to appPage here
+    {
+        goToViewInput.Draw();
+    }
 }
 
 #endif

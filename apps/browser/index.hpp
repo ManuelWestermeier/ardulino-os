@@ -5,17 +5,26 @@
 #include "../../globals.hpp"
 #include "../../utils/structs/text.hpp"
 #include "../../utils/structs/clickable.hpp"
+#include "../../utils/structs/input.hpp"
 #include "../../utils/structs/stored-map.hpp"
+
+enum AppPage {
+    Home,
+    Settings,
+    Search,
+    History,
+    Bookmarks,
+};
 
 namespace BrowserApp
 {
     Text noWifiText(1, 1, "No Wifi");
-    Btn connectToWfifButton = Button(2, 0, "Connect");
+    Btn connectToWifiButton = Button(2, 0, "Connect");  // Fixed typo here
+    Input goToViewInput(1, 0, 19, "website ip:port...");
 
     namespace State
     {
-        bool isOnHomePage = true;
-        bool isOnWebSite = true;
+        AppPage appPage = Home;  // Use 'appPage' not 'appState'
         String currentWebsite = "";
         FlashHashMap webSiteData("web-site-data");
     }
