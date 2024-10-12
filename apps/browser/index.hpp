@@ -8,7 +8,8 @@
 #include "../../utils/structs/input.hpp"
 #include "../../utils/structs/stored-map.hpp"
 
-enum AppPage {
+enum AppPage
+{
     Home,
     Settings,
     Search,
@@ -19,12 +20,12 @@ enum AppPage {
 namespace BrowserApp
 {
     Text noWifiText(1, 1, "No Wifi");
-    Btn connectToWifiButton = Button(2, 0, "Connect");  // Fixed typo here
-    Input goToViewInput(1, 0, 19, "website ip:port...");
+    Btn connectToWifiButton = Button(2, 0, "Connect"); // Fixed typo here
+    Input goToViewInput(1, 0, 19, "website ip:port...", "192.168.178.33");
 
     namespace State
     {
-        AppPage appPage = Home;  // Use 'appPage' not 'appState'
+        AppPage appPage = Home; // Use 'appPage' not 'appState'
         String currentWebsite = "";
         FlashHashMap webSiteData("web-site-data");
     }

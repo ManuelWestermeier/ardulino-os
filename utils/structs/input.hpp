@@ -44,10 +44,10 @@ struct Input
     // Handle clicks, directly open input for typing
     void OnClick(const Pos &clickPosition)
     {
-        if (clickPosition.y == y && clickPosition.x >= start && clickPosition.x <= end)
+        if (clickPosition.y - 1 == y && clickPosition.x >= start && clickPosition.x <= end)
         {
             // Open the input method and update the value
-            value = *input::ReadString(DrawKeyBoardMetaData{0, new String("")});
+            value = *input::ReadString(DrawKeyBoardMetaData{value.length() == 0 ? 0 : value.length() - 1, &value});
         }
     }
 };
