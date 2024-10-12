@@ -30,4 +30,22 @@ struct Clickable
     }
 };
 
+Clickable Button(byte y, byte x, const String &text)
+{
+    Clickable button;
+    button.y = y;
+    button.start = x;
+    button.end = x + text.length() + 2;
+
+    // Allocate a buffer and copy the text into it
+    char *buffer = new char[text.length() + 1];  // +1 for the null terminator
+    text.toCharArray(buffer, text.length() + 1); // Copy text into the buffer
+    button.text = buffer;
+
+    button.stringLength = text.length();
+    return button;
+}
+
+#define Btn Clickable
+
 #endif

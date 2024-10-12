@@ -3,13 +3,25 @@
 
 #include "../../utils/structs/pos.hpp"
 #include "../../globals.hpp"
+#include "../../utils/structs/text.hpp"
+#include "../../utils/structs/clickable.hpp"
+#include "../../utils/structs/stored-map.hpp"
 
 namespace BrowserApp
 {
+    Text noWifiText(1, 1, "No Wifi");
+    Btn connectToWfifButton = Button(2, 0, "Connect");
+
     namespace State
     {
-
+        bool isOnHomePage = true;
+        bool isOnWebSite = true;
+        String currentWebsite = "";
+        FlashHashMap webSiteData("web-site-data");
     }
+
+    // helpers
+    bool WaitForConnected();
 
     // functions
     void Update();

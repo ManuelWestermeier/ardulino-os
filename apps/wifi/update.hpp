@@ -7,7 +7,11 @@ void WifiApp::Update()
 {
     try
     {
-        SetAppTitle("Wifi", 4); // Set the title of the app to "WiFi"
+        // set title to "Wifi   (x if offline or y if online)"
+        char title[11]; // 10 characters + null terminator
+        strcpy(title, WiFi.status() == WL_CONNECTED ? "WiFi   (y)" : "WiFi   (x)");
+        SetAppTitle(title, 10);
+
         if (wifiIndex == -1)
         {
             ClearAppScreen();
@@ -27,6 +31,8 @@ void WifiApp::Update()
         else if (state == 0)
         {
             ClearAppScreen();
+            // Render SSID or "No Wifi"
+            Text(0, 1, WiFi.status() == WL_CONNECTED ? utils::setStringSize(WiFi.SSID(), 17).c_str() : "No Wifi").Draw();
             // Display the button for initiating WiFi scanning
             startScanButton.Draw();
             // Display the button for initiating WiFi scanning

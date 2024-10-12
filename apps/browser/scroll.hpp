@@ -4,7 +4,7 @@
 #include "../../globals.hpp"
 #include "./index.hpp"
 
-void BrowserApp::Update()
+void BrowserApp::Scroll(signed char direction)
 {
     SetAppTitle("Browser", 7);
 }

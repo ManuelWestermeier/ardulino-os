@@ -7,23 +7,24 @@
             "compilerArgs": [
                 "-MMD",
                 "-w",
+                "-Werror=return-type",
                 "-iprefix"
             ],
             "intelliSenseMode": "gcc-x64",
             "includePath": [
                 "D:\\Arduino\\ardulino-os",
-                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-b6b4727c58\\esp32\\qio_qspi\\include",
-                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.4\\cores\\esp32",
-                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.4\\variants\\esp32",
-                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.4\\libraries\\FS\\src",
-                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.4\\libraries\\LittleFS\\src",
-                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.4\\libraries\\Wire\\src",
-                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.4\\libraries\\WiFi\\src",
-                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.4\\libraries\\Network\\src",
-                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.4\\libraries\\EEPROM\\src",
+                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.1-33fbade6\\esp32\\qio_qspi\\include",
+                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.5\\cores\\esp32",
+                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.5\\variants\\esp32",
+                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.5\\libraries\\FS\\src",
+                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.5\\libraries\\LittleFS\\src",
+                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.5\\libraries\\Wire\\src",
+                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.5\\libraries\\WiFi\\src",
+                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.5\\libraries\\Network\\src",
+                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.5\\libraries\\EEPROM\\src",
                 "C:\\Users\\manue\\Documents\\Arduino\\libraries\\LiquidCrystal_I2C",
-                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.4\\libraries\\HTTPClient\\src",
-                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.4\\libraries\\NetworkClientSecure\\src",
+                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.5\\libraries\\HTTPClient\\src",
+                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.5\\libraries\\NetworkClientSecure\\src",
                 "c:\\users\\manue\\appdata\\local\\arduino15\\packages\\esp32\\tools\\esp-x32\\2302\\xtensa-esp32-elf\\include\\c++\\12.2.0",
                 "c:\\users\\manue\\appdata\\local\\arduino15\\packages\\esp32\\tools\\esp-x32\\2302\\xtensa-esp32-elf\\include\\c++\\12.2.0\\xtensa-esp32-elf",
                 "c:\\users\\manue\\appdata\\local\\arduino15\\packages\\esp32\\tools\\esp-x32\\2302\\xtensa-esp32-elf\\include\\c++\\12.2.0\\backward",
@@ -33,7 +34,7 @@
                 "c:\\users\\manue\\appdata\\local\\arduino15\\packages\\esp32\\tools\\esp-x32\\2302\\xtensa-esp32-elf\\include"
             ],
             "forcedInclude": [
-                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.4\\cores\\esp32\\Arduino.h"
+                "C:\\Users\\manue\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.0.5\\cores\\esp32\\Arduino.h"
             ],
             "cStandard": "c11",
             "cppStandard": "c++11",

@@ -3,7 +3,6 @@
 
 namespace Time
 {
-
     unsigned long startTimeOffset = 0;
 
     void Init()
@@ -18,6 +17,6 @@ namespace Time
     }
 };
 
-using Time::GetTime();
+using Time::GetTime;
 
 #endif

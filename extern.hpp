@@ -10,6 +10,6 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <LiquidCrystal_I2C.h>
-#include <HTTPClient.h> // Include HTTPClient library
+#include <HTTPClient.h>
 
 #endif
