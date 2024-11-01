@@ -5,6 +5,7 @@
 #include "./utils/structs/stored-map.hpp"
 #include "./wifi/async-connect.hpp"
 #include "./data/characters.hpp"
+#include "./time.hpp"
 
 LiquidCrystal_I2C lcd(0x27, 20, 4);
 
@@ -118,6 +119,8 @@ void Init()
   // init screen data
   InitData();
   AsyncWifiConnect();
+
+  Time::Init();
 }
 
 #endif
