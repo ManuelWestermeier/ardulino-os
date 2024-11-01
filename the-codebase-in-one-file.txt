@@ -13,6 +13,7 @@ namespace AppRender
 {
     String appOpened = "home";
 
+    void UpdateView();
     void UpdateCurrentApp();
     void ExitCurrentApp();
     void ClickCurrentApp(Pos *pos);
@@ -26,6 +27,7 @@ namespace AppRender
 
 // apps
 #include "./apps/browser/index.hpp"
+#include "./apps/wifi/index.hpp"
 #include "./apps/login/index.hpp"
 #include "./apps/home/index.hpp"
 #include "./apps/eeprom-editor/index.hpp"
@@ -46,19 +48,21 @@ bool AppRender::RenderSubmit()
         return true;
     if (appOpened == "pin-menager")
         return true;
+    if (appOpened == "wifi")
+        return true;
 
     return false;
 }
 
 void AppRender::UpdateCurrentApp()
 {
-    if (appOpened == "browser")
-    {
-        BrowserApp::Update();
-    }
-    else if (appOpened == "login")
+    if (!isLoggedIn)
     {
         LoginApp::Update();
+    }
+    else if (appOpened == "browser")
+    {
+        BrowserApp::Update();
     }
     else if (appOpened == "flash-light")
     {
@@ -68,7 +72,10 @@ void AppRender::UpdateCurrentApp()
     {
         ClockApp::Update();
     }
-
+    else if (appOpened == "wifi")
+    {
+        WifiApp::Update();
+    }
     else if (appOpened == "pin-menager")
     {
         PinMengerApp::Update();
@@ -96,7 +103,9 @@ void AppRender::ExitCurrentApp()
     }
     else if (appOpened == "home")
     {
-        utils::cantExitApp();
+        appOpened = "login";
+        isLoggedIn = false;
+        Auth();
     }
     else if (appOpened == "browser")
     {
@@ -107,6 +116,7 @@ void AppRender::ExitCurrentApp()
     {
         appOpened = "home";
     }
+    ClearAppScreen();
 }
 
 void AppRender::ClickCurrentApp(Pos *pos)
@@ -122,6 +132,10 @@ void AppRender::ClickCurrentApp(Pos *pos)
     else if (appOpened == "flash-light")
     {
         FlashLightApp::OnClick(*pos);
+    }
+    else if (appOpened == "wifi")
+    {
+        WifiApp::OnClick(*pos);
     }
     else if (appOpened == "clock")
     {
@@ -148,6 +162,10 @@ void AppRender::ScrollCurrentApp(signed char direction)
     else if (appOpened == "browser")
     {
         BrowserApp::Scroll(direction);
+    }
+    else if (appOpened == "wifi")
+    {
+        WifiApp::Scroll(direction);
     }
     else if (appOpened == "pin-menager")
     {
@@ -181,6 +199,10 @@ void AppRender::SubmitCurrentApp()
     else if (appOpened == "flash-light")
     {
         FlashLightApp::Submit();
+    }
+    else if (appOpened == "wifi")
+    {
+        WifiApp::Submit();
     }
     else if (appOpened == "clock")
     {
@@ -230,8 +252,25 @@ char AppRender::GetCursorPosChar()
     return '-';
 }
 
-void AppRender::UpdateLoop(Pos pos, byte _)
+void AppRender::UpdateView()
 {
+    // app view
+    for (int y = 0; y < 3; y++)
+    {
+        for (int x = 0; x < 19; x++)
+        {
+            if (!Cursor::pos.collidesWith({x, y + 1}))
+            {
+                lcd.setCursor(x, y + 1);
+                lcd.write(appScreenData[x][y]);
+            }
+        }
+    }
+}
+
+void AppRender::UpdateLoop(Pos pos, byte)
+{
+    UpdateCurrentApp();
     // app title
     lcd.home();
     for (int i = 0; i < 16; i++)
@@ -267,19 +306,7 @@ void AppRender::UpdateLoop(Pos pos, byte _)
         lcd.write('x');
     }
 
-    // app view
-    for (int y = 0; y < 3; y++)
-    {
-        for (int x = 0; x < 19; x++)
-        {
-            if (!Cursor::pos.collidesWith({x, y + 1}))
-            {
-                lcd.setCursor(x, y + 1);
-                lcd.write(appScreenData[x][y]);
-            }
-        }
-    }
-
+    UpdateView();
     // scrolls
     lcd.setCursor(19, 1);
     lcd.write(RenderSubmit() ? confirm_charcode : ' ');
@@ -331,26 +358,143 @@ void AppRender::Update()
 
 #include "../../utils/structs/pos.hpp"
 #include "../../globals.hpp"
+#include "../../utils/structs/text.hpp"
+#include "../../utils/structs/clickable.hpp"
+#include "../../utils/structs/input.hpp"
+#include "../../utils/structs/stored-map.hpp"
+
+enum AppPage
+{
+    Home,
+    Settings,
+    Search,
+    History,
+    Bookmarks,
+};
 
 namespace BrowserApp
 {
-    String state;
+    Text noWifiText(1, 1, "No Wifi");
+    Btn connectToWifiButton = Button(2, 0, "Connect"); // Fixed typo here
+    Input goToViewInput(1, 0, 19, "website ip:port...", "192.168.178.33");
 
-    void Update()
+    namespace State
     {
-        SetAppTitle("Browser", 7);
+        AppPage appPage = Home; // Use 'appPage' not 'appState'
+        String currentWebsite = "";
+        FlashHashMap webSiteData("web-site-data");
     }
 
-    void Scroll(signed char direction)
-    {
-    }
-    void OnExit()
-    {
-    }
-    void OnClick(Pos clickPos)
-    {
-    }
+    // helpers
+    bool WaitForConnected();
+
+    // functions
+    void Update();
+    void Scroll(signed char direction);
+    void OnExit();
+    void OnClick(Pos clickPos);
 };
+
+#include "./update.hpp"
+#include "./scroll.hpp"
+#include "./on-exit.hpp"
+#include "./on-click.hpp"
+
+#endif
+
+
+//filepath: apps\browser\on-click.hpp
+#ifndef APPS_BROWSER_ON_CLICK_HPP
+#define APPS_BROWSER_ON_CLICK_HPP
+
+#include "../../globals.hpp"
+#include "../../app-renderer.hpp"
+#include "../../utils/structs/pos.hpp"
+#include "./index.hpp"
+
+void BrowserApp::OnClick(Pos clickPos)
+{
+    if (WiFi.status() != WL_CONNECTED) // Fixed typo here
+    {
+        if (connectToWifiButton.collidesWith(clickPos))
+            AppRender::appOpened = "wifi";
+
+        return;
+    }
+
+    // With Internet
+
+    goToViewInput.OnClick(clickPos);
+}
+
+#endif
+
+//filepath: apps\browser\on-exit.hpp
+#ifndef APPS_BROWSER_ON_EXIT_HPP
+#define APPS_BROWSER_ON_EXIT_HPP
+
+#include "../../globals.hpp"
+#include "./index.hpp"
+
+void BrowserApp::OnExit()
+{
+}
+
+#endif
+
+//filepath: apps\browser\scroll.hpp
+#ifndef APPS_BROWSER_SCROLL_HPP
+#define APPS_BROWSER_SCROLL_HPP
+
+#include "../../globals.hpp"
+#include "./index.hpp"
+
+void BrowserApp::Scroll(signed char direction)
+{
+    SetAppTitle("Browser", 7);
+}
+
+#endif
+
+//filepath: apps\browser\update.hpp
+#ifndef APPS_BROWSER_UPDATE_HPP
+#define APPS_BROWSER_UPDATE_HPP
+
+#include "../../globals.hpp"
+#include "./index.hpp"
+
+bool BrowserApp::WaitForConnected()
+{
+    static bool wasConnected;
+    if (WiFi.status() != WL_CONNECTED)
+    {
+        // Render offline UI
+        noWifiText.Draw();
+        connectToWifiButton.Draw(); // Fixed typo here
+        wasConnected = WiFi.status() != WL_CONNECTED;
+        return false;
+    }
+
+    if (!wasConnected)
+    {
+        ClearAppScreen();
+    }
+
+    return true;
+}
+
+void BrowserApp::Update()
+{
+    SetAppTitle("Browser", 7);
+
+    if (!WaitForConnected())
+        return;
+
+    if (State::appPage == Home) // Fixed appState to appPage here
+    {
+        goToViewInput.Draw();
+    }
+}
 
 #endif
 
@@ -360,17 +504,10 @@ namespace BrowserApp
 
 #include "../../utils/structs/pos.hpp"
 #include "../../globals.hpp"
-
-enum ClockState
-{
-    Time,
-    Delay,
-};
+#include "../../time.hpp"
 
 namespace ClockApp
 {
-    ClockState state = Time;
-
     void Update()
     {
         SetAppTitle("Clock", 5);
@@ -378,7 +515,6 @@ namespace ClockApp
 
     void Scroll(unsigned char direction)
     {
-        
     }
 
     void OnClick(Pos clickPos)
@@ -478,7 +614,7 @@ namespace EEPROMEditor
 
     void Scroll(signed char direction)
     {
-        if (direction > 0 && pos < 512)
+        if (direction > 0 && pos < EEPROM_SIZE)
         {
             pos++;
         }
@@ -497,7 +633,7 @@ namespace EEPROMEditor
         {
             int readPos = pos + i - 10;
 
-            if (readPos < 0 || readPos > 512)
+            if (readPos < 0 || readPos > EEPROM_SIZE)
             {
                 appScreenData[i][1] = ' ';
                 continue;
@@ -613,6 +749,7 @@ namespace FlashLightApp
 #define APPS_HOME_HPP
 
 #include "../../globals.hpp"
+#include "../../cursor.hpp"
 #include "../../auth.hpp"
 #include "../../utils/structs/pos.hpp"
 #include "../../utils/structs/select.hpp"
@@ -625,10 +762,11 @@ namespace HomeApp
 {
     String state;
 
-    String appOptions[8]{
+    String appOptions[9] = {
+        "Wifi",
         "Browser",
-        "Flash Light",
         "Clock",
+        "Flash Light",
         "Login",
         "Pin Menager",
         "EEPROM Editor",
@@ -636,11 +774,12 @@ namespace HomeApp
         "Create Account",
     };
 
-    Select appSelect{appOptions, 8, 0};
+    Select appSelect{appOptions, 9, 1};
 
     void Update()
     {
         SetAppTitle("Home", 4);
+        // update select
         appSelect.Update();
     }
 
@@ -661,6 +800,10 @@ namespace HomeApp
         else if (appOptions[clickedApp] == "Flash Light")
         {
             AppRender::appOpened = "flash-light";
+        }
+        else if (appOptions[clickedApp] == "Wifi")
+        {
+            AppRender::appOpened = "wifi";
         }
         else if (appOptions[clickedApp] == "Clock")
         {
@@ -685,6 +828,7 @@ namespace HomeApp
         }
         else if (appOptions[clickedApp] == "Login")
         {
+            AppRender::appOpened = "login";
             isLoggedIn = false;
             Auth();
         }
@@ -708,6 +852,7 @@ namespace HomeApp
 #define APPS_LOGIN_HPP
 
 #include "../../globals.hpp"
+#include "../../config.hpp"
 #include "../../read/index.hpp"
 #include "../../utils/structs/pos.hpp"
 #include "../../utils/structs/clickable.hpp"
@@ -753,18 +898,17 @@ namespace LoginApp
         // password button clicked
         if (passwordInput.collidesWith(clickPos))
         {
-
-#ifdef IS_IN_DEBUG_LOGGED_IN
-            isLoggedIn = true;
-            return;
-#endif
-
             CURSOR_OFFSET = 6;
-            // get password input
             String *defaultInputStringPtr = new String("");
+// no password in debug mode
+#if IS_IN_DEBUG_LOGGED_IN
+            if (true)
+#else
+            // get password input
             auto result = input::ReadString(DrawKeyBoardMetaData{0, defaultInputStringPtr})->c_str();
-            // right password
+            // is right password
             if (data::auth::isRightPassword(result))
+#endif
             {
                 isLoggedIn = true;
                 lcd.clear();
@@ -926,12 +1070,549 @@ namespace PinMengerApp
 
 #endif
 
+//filepath: apps\wifi\connect-to-wifi.hpp
+#ifndef APPS_WIFI_CONNECT_TO_WIFI_HPP
+#define APPS_WIFI_CONNECT_TO_WIFI_HPP
+
+#include "../../globals.hpp"
+
+#include "./index.hpp"
+#include "../../utils/structs/stored-map.hpp"
+
+FlashHashMap wifisConnected("wifis");
+
+void WifiApp::ConnectToWifi()
+{
+    try
+    {
+        // Clear the screen and display connecting message
+        lcd.clear();
+        lcd.home();
+        lcd.print("Connecting to WiFi:");
+        lcd.setCursor(0, 2);
+        lcd.print(utils::setStringSize(WiFi.SSID(wifiIndex), 20)); // Display selected network
+        lcd.setCursor(1, 3);
+        lcd.print("<<exit | connect>>");
+
+        // Wait for joystick input (guard clause: exit on left movement)
+        while (utils::normalizeJoystick(xPin) == 0)
+        {
+        }
+
+        if (utils::normalizeJoystick(xPin) < 0)
+        {
+            // Joystick moved left, exit early
+            lcd.clear();
+            lcd.print("Aborted!");
+            delay(1000);
+            wifiIndex = -2;
+            state = 0;
+            return;
+        }
+
+        // Wait for joystick release
+        while (utils::normalizeJoystick(xPin) != 0)
+        {
+        }
+
+        // Check if the network is open (no password required)
+        bool isOpenNetwork = (WiFi.encryptionType(wifiIndex) == WIFI_AUTH_OPEN);
+
+        String defaultPassword = wifisConnected.get(WiFi.SSID(wifiIndex)); // Optional default password
+        String *password;
+        // Guard clause: skip password input for open networks
+        if (isOpenNetwork)
+        {
+            lcd.clear();
+            lcd.print("Connecting to open network...");
+            WiFi.begin(WiFi.SSID(wifiIndex)); // Connect without password
+        }
+        else
+        {
+            // Prompt for password if needed
+            lcd.clear();
+            lcd.setCursor(0, 0);
+            lcd.print("Enter password:");
+            delay(1000);
+
+            // get password length
+            CURSOR_OFFSET = defaultPassword.length() > 15 || defaultPassword.length() < 8 ? 15 : defaultPassword.length();
+            // metadata
+            password = input::ReadString({defaultPassword.length(), &defaultPassword}); // Read user input
+
+            // Guard clause: check if the password is null or empty
+            if (password == nullptr || password->length() == 0)
+            {
+                lcd.clear();
+                lcd.print("Invalid Password!");
+                delay(2000);
+                wifiIndex = -2;
+                state = 0;
+                return; // Early exit if no password is provided
+            }
+
+            lcd.clear();
+            lcd.setCursor(0, 1);
+            lcd.print("Connecting...");
+
+            WiFi.begin(WiFi.SSID(wifiIndex), *password); // Connect with password
+        }
+
+        // Guard clause: handle timeout or failed connection
+        unsigned long startTime = millis();
+        const unsigned long timeout = 10000; // 10-second timeout
+
+        while (WiFi.status() != WL_CONNECTED)
+        {
+            if (millis() - startTime > timeout)
+            {
+                lcd.clear();
+                lcd.setCursor(0, 1);
+                lcd.print("Connection Failed!");
+                if (!isOpenNetwork)
+                {
+                    lcd.setCursor(0, 2);
+                    lcd.print("Try to rewrite password!");
+                }
+                delay(2000);    // Display failure message
+                wifiIndex = -2; // Reset selection
+                state = 0;
+                return; // Early exit on connection failure
+            }
+        }
+
+        // Success message
+        lcd.clear();
+        lcd.setCursor(0, 1);
+        lcd.print("Connected!");
+        lcd.setCursor(0, 2);
+        lcd.print("IP: ");
+        lcd.print(WiFi.localIP()); // Show IP address
+        delay(2000);
+
+        // store wifi passwor
+        wifisConnected.set(WiFi.SSID(wifiIndex), isOpenNetwork ? "no pasword" : *password);
+
+        // Reset state for further actions
+        wifiIndex = -2;
+        state = 0;
+    }
+    catch (const std::exception &e)
+    {
+        // Handle any unexpected errors
+        lcd.clear();
+        lcd.setCursor(0, 1);
+        lcd.print("Error occurred:");
+        lcd.setCursor(0, 2);
+        lcd.print(e.what()); // Display error message
+        delay(3000);         // Display error for 3 seconds
+        wifiIndex = -2;
+        state = 0;
+    }
+    catch (...)
+    {
+        // Catch any other unhandled errors
+        lcd.clear();
+        lcd.setCursor(0, 1);
+        lcd.print("Unknown error!");
+        delay(3000); // Display generic error
+        wifiIndex = -2;
+        state = 0;
+    }
+}
+
+#endif
+
+//filepath: apps\wifi\fast-connect.hpp
+#ifndef APPS_WIFI_FAST_CONNECT_HPP
+#define APPS_WIFI_FAST_CONNECT_HPP
+
+#include "./connect-to-wifi.hpp"
+#include "./index.hpp"
+
+void WifiApp::FastConnect()
+{
+    try
+    {
+        ClearAppScreen();                 // Clear the display before scanning
+        Text(1, 1, "Scanning...").Draw(); // Display scanning message
+        AppRender::UpdateView();          // Update the screen
+
+        // Scan for available WiFi networks
+        int wifiCount = WifiScanStart(true, true);
+        if (wifiCount < 1)
+        {
+            ClearAppScreen();
+            Text(1, 1, "No WiFi").Draw();
+            Text(2, 1, "networks found").Draw();
+            AppRender::UpdateView();
+            delay(1000);
+            return;
+        }
+
+        int wifiIndex = 0;
+        bool connectionAttempted = false;
+        bool isOpenNetwork = false; // Declare isOpenNetwork here so it can be used later
+
+        // Loop through WiFi networks for selection with the joystick
+        while (wifiIndex < wifiCount && wifiIndex > -1)
+        {
+            // Get current WiFi network's SSID and encryption type
+            String ssid = WiFi.SSID(wifiIndex);
+            isOpenNetwork = (WiFi.encryptionType(wifiIndex) == WIFI_AUTH_OPEN); // Assign the value here
+
+            // Check if the network is either open or its SSID is in wifisConnected
+            if (isOpenNetwork || wifisConnected.has(ssid))
+            {
+                // Display the current WiFi network name
+                lcd.clear();
+                lcd.setCursor(0, 1);
+                lcd.print(utils::setStringSize(ssid, 20));
+                lcd.setCursor(0, 2);
+                lcd.print("<<next  |  connect>>");
+
+                // Wait for joystick input (left to skip, right to select, or stay idle)
+                int swipeDirection = 0;
+                // wait for joystick input (left to skip, right to select, or stay idle)
+                while ((swipeDirection = utils::normalizeJoystick(xPin)) == 0)
+                {
+                }
+                lcd.clear();
+                lcd.setCursor(5, 1);
+                lcd.print(swipeDirection < 0 ? "next" : "selected");
+                lcd.clear();
+                // wait for no movement
+                while (utils::normalizeJoystick(xPin) != 0)
+                {
+                }
+
+                if (swipeDirection < 0)
+                {
+                    // Move to the next network
+                    wifiIndex++;
+                    // all networks shown
+                    if (wifiIndex == wifiCount)
+                    {
+                        lcd.clear();
+                        lcd.setCursor(3, 1);
+                        lcd.print("not connected");
+                        delay(1000);
+                        lcd.clear();
+                        return;
+                    }
+                }
+                else
+                {
+                    // User selected this network
+                    connectionAttempted = true;
+                    break;
+                }
+            }
+            else
+            {
+                // If the network is not open and not in wifisConnected, skip to the next
+                wifiIndex++;
+                if (wifiIndex >= wifiCount)
+                    wifiIndex = 0; // Loop back to first network
+            }
+        }
+
+        if (!connectionAttempted)
+            return; // Exit if no network was selected
+
+        // Now, attempt to connect to the selected network
+        String password = wifisConnected.get(WiFi.SSID(wifiIndex)); // Get password (if any)
+
+        // Attempt to connect: open network (no password) or known network with stored password
+        if (isOpenNetwork)
+        {
+            WiFi.begin(WiFi.SSID(wifiIndex)); // Open network, no password
+        }
+        else
+        {
+            WiFi.begin(WiFi.SSID(wifiIndex), password); // Secured network with password
+        }
+
+        // Guard clause: handle timeout or failed connection
+        unsigned long startTime = millis();
+        const unsigned long timeout = 10000; // 10-second timeout
+
+        while (WiFi.status() != WL_CONNECTED)
+        {
+            if (millis() - startTime > timeout)
+            {
+                lcd.clear();
+                lcd.setCursor(0, 1);
+                lcd.print("Connection Failed!");
+                delay(2000);    // Display failure message
+                wifiIndex = -2; // Reset selection
+                state = 0;
+                return; // Early exit on connection failure
+            }
+        }
+
+        // Connection success message
+        lcd.clear();
+        lcd.setCursor(2, 1);
+        lcd.print("Connected!");
+        lcd.setCursor(0, 2);
+        lcd.print(utils::setStringSize(WiFi.SSID(wifiIndex), 20));
+        lcd.setCursor(0, 3);
+        lcd.print("IP: ");
+        lcd.print(utils::setStringSize(WiFi.localIP().toString(), 16)); // Show IP address
+        delay(2000);
+
+        // Reset state for further actions
+        wifiIndex = -2;
+        state = 0;
+    }
+    catch (const std::exception &e)
+    {
+        // Handle any unexpected errors
+        lcd.clear();
+        lcd.setCursor(0, 1);
+        lcd.print("Error occurred:");
+        lcd.setCursor(0, 2);
+        lcd.print(e.what()); // Display error message
+        delay(3000);         // Display error for 3 seconds
+        wifiIndex = -2;
+        state = 0;
+    }
+    catch (...)
+    {
+        // Catch any other unhandled errors
+        lcd.clear();
+        lcd.setCursor(0, 1);
+        lcd.print("Unknown error!");
+        delay(3000); // Display generic error
+        wifiIndex = -2;
+        state = 0;
+    }
+}
+
+#endif // APPS_WIFI_FAST_CONNECT_HPP
+
+//filepath: apps\wifi\index.hpp
+#ifndef APPS_WIFI_INDEX_HPP
+#define APPS_WIFI_INDEX_HPP
+
+#include "../../utils/structs/pos.hpp"
+#include "../../utils/structs/clickable.hpp"
+#include "../../utils/structs/text.hpp"
+#include "../../utils/structs/select.hpp"
+#include "../../globals.hpp"
+#include "../../utils/index.hpp"
+#include "../../read/index.hpp"
+#include "../../cursor.hpp"
+#include "../../app-renderer.hpp"
+#include "../../wifi/get-network-list.hpp"
+
+namespace WifiApp
+{
+    Select *wifiSelect = nullptr; // Dynamically allocated Select object for WiFi networks
+    // home page
+    Clickable startScanButton{1, 1, 11, "WifiScan", 8}; // Start WiFi scan button
+    Clickable fastConnectButton{2, 1, 10, "Connect", 7};
+    // wifi page
+    Clickable connectToWifiButton{1, 1, 10, "Connect", 7}; // Connect button
+    Clickable abortWifiButton{2, 1, 8, "Abort", 5};        // Abort button (Corrected label)
+
+    byte state = 0;
+    byte count = 50; // Counter to manage scanning delay and updates
+    int wifiIndex = -2;
+
+    void ClearWifiSelect()
+    {
+        if (wifiSelect != nullptr)
+        {
+            delete[] wifiSelect->options; // Free memory allocated for options
+            delete wifiSelect;            // Free the wifiSelect itself
+            wifiSelect = nullptr;         // Avoid dangling pointer
+        }
+    }
+
+    void Update();
+
+    void Submit()
+    {
+        if (state == 1 && wifiSelect != nullptr)
+        {
+            wifiSelect->OnClick(); // Handle the submit event for the selected network
+        }
+    }
+
+    void Scroll(signed char direction)
+    {
+        if (state == 1 && wifiSelect != nullptr)
+        {
+            wifiSelect->Scroll(direction); // Allow scrolling through the network list
+        }
+    }
+
+    void ConnectToWifi();
+    void FastConnect();
+
+    void OnClick(Pos pos)
+    {
+        if (wifiIndex > -1)
+        {
+            if (connectToWifiButton.collidesWith(pos))
+            {
+                ConnectToWifi();
+            }
+            else if (abortWifiButton.collidesWith(pos))
+            {
+                wifiIndex = -2;
+                state = 0;
+            }
+        }
+        else if (state == 0)
+        {
+            if (startScanButton.collidesWith(pos))
+            {
+                state = 1;        // Change state to scanning
+                ClearAppScreen(); // Clear the screen before scanning
+            }
+            else if (fastConnectButton.collidesWith(pos))
+            {
+                FastConnect();
+                state = 0; // Change state to scanning
+                ClearAppScreen();
+            }
+        }
+        else if (state == 1 && wifiSelect != nullptr)
+        {
+            wifiIndex = wifiSelect->OnClick(); // Handle click events for network selection
+        }
+    }
+}
+
+#include "./connect-to-wifi.hpp"
+#include "./fast-connect.hpp"
+#include "./update.hpp"
+
+#endif
+
+
+//filepath: apps\wifi\update.hpp
+#ifndef APPS_WIFI_UPDATE_HPP
+#define APPS_WIFI_UPDATE_HPP
+
+#include "./index.hpp"
+
+void WifiApp::Update()
+{
+    try
+    {
+        // set title to "Wifi   (x if offline or y if online)"
+        char title[11]; // 10 characters + null terminator
+        strcpy(title, WiFi.status() == WL_CONNECTED ? "WiFi   (y)" : "WiFi   (x)");
+        SetAppTitle(title, 10);
+
+        if (wifiIndex == -1)
+        {
+            ClearAppScreen();
+            Text(1, 1, "No Network Selected").Draw();
+            AppRender::UpdateView();
+            delay(1000);
+            wifiIndex = -2;
+            state = 0;
+        }
+        else if (wifiIndex > -1)
+        {
+            ClearAppScreen();
+            Text(0, 0, utils::setStringSize(WiFi.SSID(wifiIndex), 19)).Draw();
+            connectToWifiButton.Draw();
+            abortWifiButton.Draw();
+        }
+        else if (state == 0)
+        {
+            ClearAppScreen();
+            // Render SSID or "No Wifi"
+            Text(0, 1, WiFi.status() == WL_CONNECTED ? utils::setStringSize(WiFi.SSID(), 17).c_str() : "No Wifi").Draw();
+            // Display the button for initiating WiFi scanning
+            startScanButton.Draw();
+            // Display the button for initiating WiFi scanning
+            fastConnectButton.Draw();
+        }
+        else if (state == 1)
+        {
+            if (count == 50)
+            {
+                ClearAppScreen();                 // Clear the display before scanning
+                Text(1, 1, "Scanning...").Draw(); // Display searching message
+                AppRender::UpdateView();          // Update the screen
+
+                // Scan for available WiFi networks
+                int wifiCount = WifiScanStart(true, true);
+
+                if (wifiCount > 0) // If networks are found
+                {
+                    // Display processing message
+                    Text(1, 1, "Processing...").Draw();
+                    AppRender::UpdateView();
+
+                    ClearWifiSelect(); // Free any previously allocated wifiSelect
+
+                    wifiSelect = GetWifiNetworkSelect(wifiCount); // Get the new list of WiFi networks
+                    if (wifiSelect != nullptr)
+                    {
+                        wifiSelect->Update(); // Update the selection widget
+                    }
+                    else
+                    {
+                        // Handle allocation failure
+                        Text(1, 1, "Failed to allocate memory").Draw();
+                        AppRender::UpdateView();
+                        delay(1000);
+                        state = 0; // Reset state on failure
+                    }
+                }
+                else // If no networks were found
+                {
+                    ClearAppScreen();
+                    Text(1, 1, "0 Networks Found").Draw();
+                    AppRender::UpdateView();
+                    delay(1000);
+                    ClearAppScreen();
+                    state = 0; // Reset to initial state
+                }
+
+                count = 0; // Reset the count after scanning
+            }
+            else
+            {
+                if (wifiSelect != nullptr)
+                {
+                    wifiSelect->Update(); // Continuously update the select list if it exists
+                }
+                count++; // Increment the count until the next scan
+            }
+        }
+    }
+    catch (const std::exception &e)
+    {
+        // Handle any unexpected errors
+        lcd.clear();
+        lcd.setCursor(0, 1);
+        lcd.print("Error occurred:");
+        lcd.setCursor(0, 2);
+        lcd.print(e.what()); // Display error message
+        delay(3000);         // Display error for 3 seconds
+        wifiIndex = -2;
+        state = 0;
+    }
+}
+
+#endif //
+
 //filepath: ardulino-os.ino
 #include "./config.hpp"
 
 #include "./utils/index.hpp"
 #include "./utils/structs/draw-keybord-meta-data.hpp"
 #include "./globals.hpp"
+#include "./wifi/on-wifi-change.hpp"
 #include "./utils/structs/clickable.hpp"
 #include "./data/index.hpp"
 #include "./cursor.hpp"
@@ -940,12 +1621,17 @@ namespace PinMengerApp
 #include "./app-renderer.hpp"
 #include "./auth.hpp"
 
-void setup() {
+void setup()
+{
+  WifiMenager::Update();
   Init();
   Auth();
+  WifiMenager::Update();
 }
 
-void loop() {
+void loop()
+{
+  WifiMenager::Update();
   AppRender::UpdateCurrentApp();
   AppRender::Update();
 }
@@ -976,6 +1662,7 @@ void Auth()
             AppRender::Update();
         }
     }
+    AppRender::appOpened = "home";
     ClearAppScreen();
 }
 
@@ -984,7 +1671,7 @@ void Auth()
 //filepath: config.hpp
 #include "Arduino.h"
 
-#define IS_IN_DEBUG_LOGGED_IN false
+#define IS_IN_DEBUG_LOGGED_IN true
 #define LED_BUILTIN 2
 
 //filepath: cursor.hpp
@@ -1078,7 +1765,7 @@ namespace auth
 
     bool accountExists()
     {
-        return readFromEEPROM(HAS_ACCOUNT_ADRESS) == byte(IS_AUTH_BYTE);
+        return data::readFromEEPROM(HAS_ACCOUNT_ADRESS) == byte(IS_AUTH_BYTE);
     }
 
     char *getPassword()
@@ -1089,15 +1776,18 @@ namespace auth
     void createAccount(String *password)
     {
         strings::storeString(PASSWORD_ADRESS, password, 6);
-        writeToEEPROM(HAS_ACCOUNT_ADRESS, byte(IS_AUTH_BYTE));
+        data::writeToEEPROM(HAS_ACCOUNT_ADRESS, byte(IS_AUTH_BYTE));
         isLoggedIn = true;
     }
 
     bool isRightPassword(const char *password)
     {
+#if IS_IN_DEBUG_LOGGED_IN
+        return true;
+#endif
         for (int i = 0; i < 6; i++)
         {
-            if (password[i] != readFromEEPROM(PASSWORD_ADRESS + i))
+            if (password[i] != data::readFromEEPROM(PASSWORD_ADRESS + i))
                 return false;
         }
         return true;
@@ -1106,9 +1796,80 @@ namespace auth
 
 #endif
 
+//filepath: data\characters.hpp
+#ifndef DATA_CHARACTERS_HPP
+#define DATA_CHARACTERS_HPP
+
+// predefined character codes
+#define cursor_charcode 0
+#define confirm_charcode 1
+#define upArrowChar 2
+#define downArrowChar 3
+
+// custum characters
+uint8_t cursorChar[2][8] = {
+    {
+        B00000,
+        B00100,
+        B01110,
+        B11111,
+        B00100,
+        B00100,
+        B00100,
+        B00000,
+    },
+    {
+        B00000,
+        B00100,
+        B01110,
+        B10101,
+        B00100,
+        B00100,
+        B00100,
+        B00000,
+    }};
+
+uint8_t confirmChar[8] = {
+    B00000,
+    B00001,
+    B00001,
+    B00010,
+    B00010,
+    B10100,
+    B01100,
+    B00000,
+};
+
+// Define custom characters for up and down arrows
+byte upArrow[8] = {
+    B00000,
+    B00100,
+    B01010,
+    B10001,
+    B00000,
+    B00000,
+    B00000,
+    B00000,
+};
+
+byte downArrow[8] = {
+    B00000,
+    B00000,
+    B00000,
+    B00000,
+    B10001,
+    B01010,
+    B00100,
+    B00000,
+};
+
+#endif
+
 //filepath: data\index.hpp
 #ifndef DATA_INDEX_HPP
 #define DATA_INDEX_HPP
+
+#include "../globals.hpp"
 
 namespace data
 {
@@ -1143,7 +1904,7 @@ namespace strings
 
     for (int i = 0; i < length; i++)
     {
-      out[i] = readFromEEPROM(adress + i);
+      out[i] = data::readFromEEPROM(adress + i);
     }
 
     return out;
@@ -1153,7 +1914,7 @@ namespace strings
   {
     for (int i = 0; i < length; i++)
     {
-      buffer[i] = readFromEEPROM(adress + i);
+      buffer[i] = data::readFromEEPROM(adress + i);
     }
   }
 
@@ -1161,10 +1922,29 @@ namespace strings
   {
     for (int i = 0; i < length; i++)
     {
-      writeToEEPROM(adress + i, str->charAt(i));
+      data::writeToEEPROM(adress + i, str->charAt(i));
     }
   }
 };
+
+#endif
+
+//filepath: extern.hpp
+#ifndef EXTERN_HPP
+#define EXTERN_HPP
+
+#include <NTPClient.h>
+#include <WiFiUdp.h>
+#include <FS.h>
+#include <LittleFS.h>
+#include <Wire.h>
+#include <map>
+#include <WiFi.h>
+#include <EEPROM.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <LiquidCrystal_I2C.h>
+#include <HTTPClient.h>
 
 #endif
 
@@ -1172,13 +1952,15 @@ namespace strings
 #ifndef GLOBALS_HPP
 #define GLOBALS_HPP
 
-#include <Wire.h>
-#include <EEPROM.h>
-#include <LiquidCrystal_I2C.h>
+#include "./extern.hpp"
+#include "./utils/structs/stored-map.hpp"
+#include "./wifi/async-connect.hpp"
+#include "./data/characters.hpp"
+#include "./time.hpp"
 
 LiquidCrystal_I2C lcd(0x27, 20, 4);
 
-//Max memory pointer
+// Max memory pointer
 #define MAX_MEM_PTR 2048
 #define EEPROM_SIZE 512
 
@@ -1192,10 +1974,6 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 #define ledPin LED_BUILTIN
 
 // input
-#define cursor_charcode 0
-#define confirm_charcode 1
-#define upArrowChar 2
-#define downArrowChar 3
 #define RENDERING_FRAME 100
 
 #define GET_CHAR_NO_CHAR 0
@@ -1206,9 +1984,8 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 #define GET_CHAR_DELETE_ALL 5
 
 String keyBoardLayout[2] = {
-  "abcdefghij0123456789",
-  "klmnopqrstuvwxyz .?!"
-};
+    "abcdefghij0123456789",
+    "klmnopqrstuvwxyz .?!"};
 
 int CURSOR_OFFSET = 15;
 
@@ -1222,8 +1999,10 @@ int CURSOR_OFFSET = 15;
 char appScreenData[19][3];
 char appTitle[16];
 
-void SetAppTitle(char *title, int length) {
-  for (int i = 0; i < 16; i++) {
+void SetAppTitle(char *title, int length)
+{
+  for (int i = 0; i < 16; i++)
+  {
     if (i < length)
       appTitle[i] = title[i];
     else
@@ -1231,7 +2010,8 @@ void SetAppTitle(char *title, int length) {
   }
 }
 
-void ClearAppScreen() {
+void ClearAppScreen()
+{
 
   for (int y = 0; y < 3; y++)
     for (int x = 0; x < 19; x++)
@@ -1243,99 +2023,55 @@ void ClearAppScreen() {
 bool isLoggedIn = false;
 
 // custum characters
-
-uint8_t cursorChar[2][8] = {
-  {
-    B00000,
-    B00100,
-    B01110,
-    B11111,
-    B00100,
-    B00100,
-    B00100,
-    B00000,
-  },
-  {
-    B00000,
-    B00100,
-    B01110,
-    B10101,
-    B00100,
-    B00100,
-    B00100,
-    B00000,
-  }
-};
-
-uint8_t confirmChar[8] = {
-  B00000,
-  B00001,
-  B00001,
-  B00010,
-  B00010,
-  B10100,
-  B01100,
-  B00000,
-};
-
-// Define custom characters for up and down arrows
-byte upArrow[8] = {
-  B00000,
-  B00100,
-  B01010,
-  B10001,
-  B00000,
-  B00000,
-  B00000,
-  B00000,
-};
-
-byte downArrow[8] = {
-  B00000,
-  B00000,
-  B00000,
-  B00000,
-  B10001,
-  B01010,
-  B00100,
-  B00000,
-};
+#include "./data/characters.hpp"
 
 int testIndex = 0;
-void test() {
+void test(char *title = "")
+{
   testIndex++;
   lcd.clear();
   lcd.home();
+  lcd.print(title);
+  lcd.setCursor(0, 1);
   lcd.print(testIndex);
+
+  Serial.println(title);
+  Serial.println(testIndex);
   delay(1000);
 }
 
-void InitData() {
+void InitData()
+{
   for (int i = 0; i < 16; i++)
     appTitle[i] = ' ';
 
   ClearAppScreen();
 }
 
-void Init() {
-  //lcd display
+void Init()
+{
+  // lcd display
   lcd.init();
   lcd.backlight();
-  //serial
+  // serial
   Serial.begin(9600);
   Serial.println("Starting");
-  //eeprom
+  // eeprom
   EEPROM.begin(EEPROM_SIZE);
-  //create characters
+  FlashHashMap::begin();
+  // create characters
   lcd.createChar(cursor_charcode, cursorChar[0]);
   lcd.createChar(confirm_charcode, confirmChar);
   lcd.createChar(upArrowChar, upArrow);
   lcd.createChar(downArrowChar, downArrow);
-  //pin modes
+  // pin modes
   pinMode(swPin, INPUT_PULLUP);
   pinMode(ledPin, OUTPUT);
-  //init screen data
+  // init screen data
   InitData();
+  AsyncWifiConnect();
+
+  Time::Init();
 }
 
 #endif
@@ -1593,10 +2329,10 @@ char ReadChar(DrawKeyBoardMetaData *drawKeyBoardMetaData)
 {
   Pos cursorPos = Cursor::Get<DrawKeyBoardMetaData *>(DrawKeyBoard, drawKeyBoardMetaData);
 
-  digitalWrite(LED_BUILTIN, HIGH);
+  digitalWrite(ledPin, HIGH);
   while (digitalRead(swPin) == LOW)
     ;
-  digitalWrite(LED_BUILTIN, LOW);
+  digitalWrite(ledPin, LOW);
 
   // characters
   if (cursorPos.y == 1 || cursorPos.y == 2)
@@ -1712,6 +2448,51 @@ String *ReadString(DrawKeyBoardMetaData drawKeyBoardMetaData)
 
 #endif
 
+//filepath: time.hpp
+#ifndef TIME_HPP
+#define TIME_HPP
+
+#include "./globals.hpp"
+#include "./wifi/on-wifi-change.hpp"
+
+// Update interval for NTP time (in milliseconds)
+const long utcOffsetInSeconds = 0; // Set your UTC offset here
+
+namespace Time
+{
+    WiFiUDP ntpUDP;
+    NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
+
+    unsigned long startTimeOffset = 0;
+
+    void UpdateData(bool isConnected)
+    {
+        if (!isConnected)
+            return;
+        timeClient.begin();
+        while (!timeClient.update())
+        {
+            timeClient.forceUpdate(); // Fetch time from NTP server
+        }
+        startTimeOffset = timeClient.getEpochTime() - millis();
+    }
+
+    unsigned long GetTime()
+    {
+        return startTimeOffset + millis();
+    }
+
+    void Init()
+    {
+        WifiMenager::onWifiChangeCallback.Add(UpdateData);
+    }
+};
+
+using Time::GetTime;
+
+#endif
+
+
 //filepath: utils\index.hpp
 #ifndef UTILS_INDEX_HPP
 #define UTILS_INDEX_HPP
@@ -1773,6 +2554,26 @@ namespace utils
     return 0;
   }
 
+  String setStringSize(const String &str, int size)
+  {
+    int length = str.length();
+    if (length == size)
+      return str; // Return by value
+
+    if (length > size)
+    {
+      return str.substring(0, size); // Return a trimmed version by value
+    }
+
+    String newStr;
+    for (int i = 0; i < size; i++)
+    {
+      newStr += i < length ? str.charAt(i) : ' '; // Pad with spaces if needed
+    }
+
+    return newStr; // Return the new string by value
+  }
+
 };
 
 #endif
@@ -1786,17 +2587,17 @@ namespace utils
 
 struct Clickable
 {
-    int y;
-    int start;
-    int end;
+    byte y;
+    byte start;
+    byte end;
     char *text;
-    int stringLength;
+    byte stringLength;
 
     void Draw()
     {
         appScreenData[start][y] = '[';
 
-        for (int i = start + 1; i < end - 1; i++)
+        for (byte i = start + 1; i < end - 1; i++)
         {
             appScreenData[i][y] = i - start - 1 < stringLength ? text[i - start - 1] : ' ';
         }
@@ -1810,7 +2611,129 @@ struct Clickable
     }
 };
 
+Clickable Button(byte y, byte x, const String &text)
+{
+    Clickable button;
+    button.y = y;
+    button.start = x;
+    button.end = x + text.length() + 2;
+
+    // Allocate a buffer and copy the text into it
+    char *buffer = new char[text.length() + 1];  // +1 for the null terminator
+    text.toCharArray(buffer, text.length() + 1); // Copy text into the buffer
+    button.text = buffer;
+
+    button.stringLength = text.length();
+    return button;
+}
+
+#define Btn Clickable
+
 #endif
+
+//filepath: utils\structs\dblist.hpp
+#ifndef UTILS_STRUCTS_DBLIST_HPP
+#define UTILS_STRUCTS_DBLIST_HPP
+
+#include "Scaleist;.hppkeys"
+
+template <typename KeyType, typename ValueType, typename SizeType>
+struct DbList
+{
+    Scaleist<KeyType, SizeType> keys;
+    List<ValueType, SizeType> values;
+
+    bool hasKey(KeyType key)
+    {
+        for (SizeType i = 0; i < keys.size; i++)
+        {
+            if (keys.data[i] == key)
+                return true;
+        }
+        return false;
+    }
+
+    bool hasValue(ValueType value)
+    {
+        for (SizeType i = 0; i < keys.size; i++)
+        {
+            if (keys.data[i] == value)
+                return true;
+        }
+        return false;
+    }
+
+    bool indexOfKey(KeyType key)
+    {
+        for (SizeType i = 0; i < keys.size; i++)
+        {
+            if (keys.data[i] == key)
+                return i;
+        }
+        return -1;
+    }
+
+    bool indexOfValue(ValueType value)
+    {
+        for (SizeType i = 0; i < keys.size; i++)
+        {
+            if (keys.data[i] == value)
+                return i;
+        }
+        return -1;
+    }
+
+    void Add(KeyType key, ValueType value)
+    {
+        keys.Scale(keys.size + 1);
+        values.Scale(values.size + 1);
+    }
+
+    KeyType GetKey(ValueType value)
+    {
+        SizeType pos = indexOfValue(value);
+        if (pos == -1)
+        {
+            return NULL;
+        }
+        return keys.data[pos];
+    }
+
+    ValueType GetValue(KeyType key)
+    {
+        SizeType pos = indexOfKey(key);
+        if (pos == -1)
+        {
+            return NULL;
+        }
+        return values.data[pos];
+    }
+
+    bool SetKey(ValueType value, KeyType newKey)
+    {
+        SizeType pos = indexOfValue(value);
+        if (pos == -1)
+        {
+            return false;
+        }
+        keys.data[pos] = newKey;
+        return true;
+    }
+
+    bool SetValue(KeyType key, ValueType newValue)
+    {
+        SizeType pos = indexOfKey(key);
+        if (pos == -1)
+        {
+            return false;
+        }
+        values.data[pos] = newValue;
+        return true;
+    }
+};
+
+#endif
+
 
 //filepath: utils\structs\draw-keybord-meta-data.hpp
 #ifndef UTILS_STRUCTS_DRAW_KEYBOARD_META_DATA_HPP
@@ -1823,6 +2746,145 @@ struct DrawKeyBoardMetaData
 };
 
 #endif
+
+//filepath: utils\structs\input.hpp
+#ifndef UTILS_STRUCTS_INPUT_HPP
+#define UTILS_STRUCTS_INPUT_HPP
+
+#include "./../../globals.hpp"
+#include "./../../read/index.hpp"
+#include "./../../utils/index.hpp"
+
+struct Input
+{
+    byte y;
+    byte start;        // Start position (X coordinate) of the input field
+    byte end;          // End position (X coordinate) of the input field
+    char *placeholder; // Placeholder text when the input is empty
+    String value;      // User input value
+
+    // Constructor to initialize the input field
+    Input(byte _y, byte _start, byte _end, const char *_placeholder, String _value = "")
+    {
+        y = _y;
+        start = _start;
+        end = _end;
+        placeholder = new char[strlen(_placeholder) + 1];
+        strcpy(placeholder, _placeholder);
+        value = _value;
+    }
+
+    // Draw the input field
+    void Draw()
+    {
+        String toDisplay = value.isEmpty() ? String(placeholder) : value;
+
+        // Adjust the size of the string based on available space between start and end
+        toDisplay = utils::setStringSize(toDisplay, end - start - 2);
+
+        // Draw the input field with <value> markers
+        appScreenData[start][y] = '<';
+        for (byte i = start + 1; i < end - 1; i++)
+        {
+            appScreenData[i][y] = i - start - 1 < toDisplay.length() ? toDisplay[i - start - 1] : ' ';
+        }
+        appScreenData[end - 1][y] = '>';
+    }
+
+    // Handle clicks, directly open input for typing
+    void OnClick(const Pos &clickPosition)
+    {
+        if (clickPosition.y - 1 == y && clickPosition.x >= start && clickPosition.x <= end)
+        {
+            // Open the input method and update the value
+            value = *input::ReadString(DrawKeyBoardMetaData{value.length(), &value});
+        }
+    }
+};
+
+#endif
+
+
+//filepath: utils\structs\list.hpp
+#ifndef UTILS_STRUCTS_LIST_HPP
+#define UTILS_STRUCTS_LIST_HPP
+
+#include <new> // Include for placement new
+
+template <typename T, typename SizeType>
+struct List
+{
+    SizeType size = 0;
+    T *data = nullptr;
+
+    List(SizeType length)
+    {
+        Scale(length); // Initialize the list with the specified length
+    }
+
+    List(T *_data)
+    {
+        data = _data;
+    }
+
+    ~List()
+    {
+        if (data != nullptr)
+        {
+            // Call the destructor for each element in the array
+            for (SizeType i = 0; i < size; i++)
+            {
+                data[i].~T();
+            }
+            delete[] reinterpret_cast<char *>(data); // Free allocated memory
+        }
+    }
+
+    void Scale(SizeType itemCount)
+    {
+        // Allocate memory for the array without calling constructors
+        T *newData = reinterpret_cast<T *>(new char[itemCount * sizeof(T)]);
+        SizeType writeLength = size > itemCount ? itemCount : size;
+
+        // Copy existing data to the new array
+        for (SizeType i = 0; i < writeLength; i++)
+        {
+            new (&newData[i]) T(data[i]); // Placement new to copy construct
+            data[i].~T();                 // Destroy old object
+        }
+
+        // Free the old memory
+        if (data != nullptr)
+        {
+            delete[] reinterpret_cast<char *>(data); // Cast back to char for deletion
+        }
+
+        // Update the size and data pointer
+        size = itemCount;
+        data = newData;
+    }
+
+    SizeType Find(T item)
+    {
+        for (SizeType i = 0; i < size; i++)
+        {
+            if (data[i] == item)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    void Add(T item)
+    {
+        Scale(size + 1);
+        data[size] = item;
+    }
+};
+
+#endif
+
 
 //filepath: utils\structs\pos.hpp
 #ifndef UTILS_STRUCTS_POS_HPP
@@ -1859,7 +2921,6 @@ struct Pos
 
 #include "../../globals.hpp"
 #include "../../cursor.hpp"
-
 #include "./pos.hpp"
 
 struct Select
@@ -1870,18 +2931,23 @@ struct Select
 
     void Scroll(signed char direction)
     {
-        if (direction < 0 && pos < optionsLength - 1)
+        if (direction < 0 && pos + 1 < optionsLength - 1 && pos - 1 < optionsLength - 1)
             pos++;
-        else if (direction > 0 && pos > 0)
+        else if (direction > 0 && pos + 1 > 0 && pos - 1 > 0)
             pos--;
     }
 
+    byte cursorPos = 1;
     void Update()
     {
+        // set the cursor pos only if the cursor is on screen data 0-3
+        cursorPos = Cursor::pos.y == 0 || Cursor::pos.x == 19 ? cursorPos : Cursor::pos.y - 1;
         // add the select
         appScreenData[0][0] = ' ';
-        appScreenData[0][1] = '>';
+        appScreenData[0][1] = ' ';
         appScreenData[0][2] = ' ';
+        // set the pointer
+        appScreenData[0][cursorPos] = '>';
 
         // draw the options
         for (int optionIndex = 0; optionIndex < 3; optionIndex++)
@@ -1907,11 +2973,385 @@ struct Select
 
     byte OnClick()
     {
-        if (pos < 0 || pos > optionsLength - 1)
+        byte returnPos = pos + cursorPos - 1;
+
+        if (returnPos < 0 || returnPos > optionsLength - 1)
             return -1;
 
-        return pos;
+        return returnPos;
     }
 };
+
+#endif
+
+//filepath: utils\structs\stored-map.hpp
+#ifndef UTILS_STRUCTS_STORED_MAP
+#define UTILS_STRUCTS_STORED_MAP
+
+#include "../../globals.hpp"
+#include <base64.h> // Include Base64 library (you may need to install it)
+
+struct FlashHashMap
+{
+    String root;
+
+    // Constructor to initialize the root directory with the escaped map ID
+    FlashHashMap(const String &mapId)
+    {
+        root = "/maps/" + base64Encode(mapId) + "/"; // Set the root directory based on Base64 encoded map ID
+        createDirectory();                           // Create the directory if it doesn't exist
+    }
+
+    // Method to begin LittleFS
+    static void begin()
+    {
+        LittleFS.begin();
+    }
+
+    // Method to Base64 encode keys and map IDs
+    String base64Encode(const String &key)
+    {
+        String encoded = base64::encode((const uint8_t *)key.c_str(), key.length());
+        encoded.replace("=", "_"); // Replace padding character
+        encoded.replace("/", "_"); // Replace with underscore or any other safe character
+        encoded.replace("+", "-"); // Replace with a hyphen or any other safe character
+        return encoded;
+    }
+
+    // Method to create the root directory if it doesn't exist
+    void createDirectory()
+    {
+        if (!LittleFS.exists("/maps/"))
+        {
+            LittleFS.mkdir("/maps/");
+        }
+
+        if (!LittleFS.exists(root))
+        {
+            LittleFS.mkdir(root);
+        }
+    }
+
+    // Check if a file exists
+    bool fileExists(const String &filePath)
+    {
+        return LittleFS.exists(filePath);
+    }
+
+    // Method to set a key-value pair
+    void set(const String &key, const String &value)
+    {
+        String escapedKey = base64Encode(key);      // Base64 encode the key to make it valid
+        String filePath = root + escapedKey + ".v"; // Construct the full file path with ".v"
+
+        // Create the file
+        File file = LittleFS.open(filePath, fileExists(filePath) ? "w" : "w+", !fileExists(filePath));
+        file.print(value); // Write to the file
+        file.close();
+    }
+
+    // Method to get a value by key
+    String get(const String &key)
+    {
+        String escapedKey = base64Encode(key);      // Base64 encode the key to make it valid
+        String filePath = root + escapedKey + ".v"; // Construct the full file path
+
+        File file = LittleFS.open(filePath, "r");
+        String value = file.readString();
+        file.close();
+
+        return value;
+    }
+
+    // Method to check if a key exists
+    bool has(const String &key)
+    {
+        String escapedKey = base64Encode(key);      // Base64 encode the key
+        String filePath = root + escapedKey + ".v"; // Construct the full file path
+        return fileExists(filePath);                // Use the fileExists method
+    }
+
+    // Method to delete a key-value pair
+    void remove(const String &key)
+    {
+        String escapedKey = base64Encode(key);      // Base64 encode the key
+        String filePath = root + escapedKey + ".v"; // Construct the full file path
+        LittleFS.remove(filePath);
+    }
+};
+
+#endif
+
+
+//filepath: utils\structs\text.hpp
+#ifndef UTILS_STRUCTS_TEXT_HPP
+#define UTILS_STRUCTS_TEXT_HPP
+
+#include "../../globals.hpp"
+#include "./pos.hpp"
+
+struct Text
+{
+    byte y;
+    byte x;
+    String text;
+
+    void Draw()
+    {
+        for (byte i = 0; i < x + text.length() - 1; i++)
+        {
+            appScreenData[i + x][y] = text.charAt(i);
+        }
+    }
+
+    bool collidesWith(const Pos &other) const
+    {
+        return (other.y - 1) == y && other.x >= x && other.x <= x + text.length() - 1;
+    }
+};
+
+#endif
+
+//filepath: utils\structs\wifi-data.hpp
+#ifndef UTILS_STRUCTS_WIFI_DATA_HPP
+#define UTILS_STRUCTS_WIFI_DATA_HPP
+
+#include <WiFi.h>
+
+struct WifiData
+{
+    String ssid;
+    int32_t rssi;
+    int32_t channel;
+    uint8_t authMode; // Changed to uint8_t for clarity
+
+    WifiData(int i)
+    {
+        // Check if index is within valid range
+        if (i >= 0 && i < WiFi.scanComplete())
+        {
+            ssid = WiFi.SSID(i);
+            rssi = WiFi.RSSI(i);
+            channel = WiFi.channel(i);
+            authMode = WiFi.encryptionType(i);
+        }
+        else
+        {
+            Serial.println("ERROR: Index out of range: ");
+            Serial.print(i);
+            ssid = "Unknown"; // Assign a default value
+            rssi = 0;
+            channel = 0;
+            authMode = 0; // Default value for auth mode
+        }
+    }
+};
+
+#endif
+
+//filepath: wifi\async-connect.hpp
+#ifndef WIFI_ASYNC_CONNECT_HPP
+#define WIFI_ASYNC_CONNECT_HPP
+
+#include "../utils/structs/stored-map.hpp"
+#include "../globals.hpp"
+
+FlashHashMap wifisConnectedAsync("wifis");
+
+void AsyncWifiTask(void *parameter)
+{
+    Serial.println("Starting WiFi scan...");
+
+    try
+    {
+        // Set WiFi to station mode and disconnect from an AP if it was previously connected.
+        WiFi.mode(WIFI_STA);
+        WiFi.disconnect();
+        WiFi.scanDelete();
+        int wifiCount = WiFi.scanNetworks(false, true, true);
+
+        Serial.print("Networks found: ");
+        Serial.println(wifiCount);
+
+        if (wifiCount < 1)
+        {
+            Serial.println("No networks found. Terminating task.");
+            vTaskDelete(NULL); // No networks found, terminate the task
+            return;
+        }
+
+        int wifiIndex = 0;
+
+        // Loop through WiFi networks until a connection is made
+        while (wifiIndex < wifiCount)
+        {
+            String ssid = WiFi.SSID(wifiIndex);
+            bool isOpenNetwork = (WiFi.encryptionType(wifiIndex) == WIFI_AUTH_OPEN);
+
+            Serial.print("Trying to connect to SSID: ");
+            Serial.println(ssid);
+
+            if (isOpenNetwork || wifisConnectedAsync.has(ssid))
+            {
+                String password = wifisConnectedAsync.get(ssid); // Get password if available
+
+                // Try connecting to the network
+                if (isOpenNetwork)
+                {
+                    Serial.print("Connecting to open network: ");
+                    Serial.println(ssid);
+                    WiFi.begin(ssid.c_str()); // Open network, no password
+                }
+                else
+                {
+                    Serial.print("Connecting to secured network: ");
+                    Serial.println(ssid);
+                    WiFi.begin(ssid.c_str(), password.c_str()); // Secured network with password
+                }
+
+                unsigned long startTime = millis();
+                const unsigned long timeout = 10000; // 10-second timeout
+
+                // Wait for connection or timeout
+                while (WiFi.status() != WL_CONNECTED)
+                {
+                    if (millis() - startTime > timeout)
+                    {
+                        Serial.print("Connection to ");
+                        Serial.print(ssid);
+                        Serial.println(" failed. Trying next network.");
+                        break; // Connection failed, move to the next network
+                    }
+                }
+
+                // If connected, log the success and stop searching
+                if (WiFi.status() == WL_CONNECTED)
+                {
+                    Serial.print("Successfully connected to ");
+                    Serial.println(ssid);
+                    Serial.print("IP address: ");
+                    Serial.println(WiFi.localIP());
+                    vTaskDelete(NULL); // Successfully connected, terminate the task
+                    return;
+                }
+            }
+
+            // Move to the next network if connection failed
+            wifiIndex++;
+        }
+
+        // No successful connection, terminate the task
+        Serial.println("No successful connection made. Terminating task.");
+        vTaskDelete(NULL);
+    }
+    catch (...)
+    {
+        // Handle any errors and terminate the task
+        Serial.println("An error occurred during WiFi connection attempt.");
+        vTaskDelete(NULL);
+    }
+}
+
+void AsyncWifiConnect()
+{
+    // Create a background task for asynchronous WiFi connection
+    xTaskCreate(
+        AsyncWifiTask,   // Task function
+        "AsyncWifiTask", // Name of the task
+        10000,           // Stack size (in words)
+        NULL,            // Task input parameter
+        1,               // Priority of the task
+        NULL             // Task handle
+    );
+}
+
+#endif // WIFI_ASYNC_CONNECT_HPP
+
+
+//filepath: wifi\get-network-list.hpp
+#ifndef WIFI_GET_NETWORK_LIST_HPP
+#define WIFI_GET_NETWORK_LIST_HPP
+
+#include "../utils/structs/select.hpp"
+#include "../globals.hpp"
+
+int WifiScanStart(
+    bool showHidden = false,
+    bool passive = false,
+    uint32_t max_ms_per_chan = 300,
+    uint8_t channel = 0,
+    const char *ssid = nullptr,
+    const uint8_t *bssid = nullptr)
+{
+    // Set WiFi to station mode and disconnect from an AP if it was previously connected.
+    WiFi.mode(WIFI_STA);
+    WiFi.disconnect();
+    WiFi.scanDelete();
+    return WiFi.scanNetworks(false, showHidden, passive, max_ms_per_chan, channel, ssid, bssid);
+}
+
+Select *GetWifiNetworkSelect(int networkCount)
+{
+    Select *wifiSelect = new Select();
+    wifiSelect->optionsLength = networkCount;
+
+    // Allocate new memory for the SSID list
+    wifiSelect->options = new String[wifiSelect->optionsLength]; // Allocate new memory
+    if (wifiSelect->options == nullptr)
+    {
+        ClearAppScreen();
+        // Handle allocation failure
+        Text(1, 1, "Allocation Failed").Draw();
+        AppRender::UpdateView();
+        delay(1000);
+        delete wifiSelect;    // Clean up wifiSelect
+        wifiSelect = nullptr; // Set pointer to nullptr after deletion
+        return nullptr;       // Return null pointer if allocation failed
+    }
+
+    // Fill the SSID list
+    for (byte i = 0; i < wifiSelect->optionsLength; i++)
+    {
+        wifiSelect->options[i] = WiFi.SSID(i);
+    }
+
+    // Set position if there are more than 2 networks
+    if (wifiSelect->optionsLength > 2)
+    {
+        wifiSelect->pos = 1;
+    }
+
+    return wifiSelect; // Return pointer to the allocated list
+}
+
+#endif
+
+
+//filepath: wifi\on-wifi-change.hpp
+#ifndef WIFI_ON_WIFI_CHANGE_HPP
+#define WIFI_ON_WIFI_CHANGE_HPP
+
+#include "../globals.hpp"
+#include "../utils/structs/list.hpp"
+
+namespace WifiMenager
+{
+    bool isConnectedToWifi = false;
+
+    List<void (*)(bool), int> onWifiChangeCallback(0);
+
+    void Update()
+    {
+        bool isConnected = WiFi.status() == WL_CONNECTED;
+
+        if (isConnectedToWifi != isConnected)
+        {
+            for (int i = 0; i < onWifiChangeCallback.size; i++)
+                onWifiChangeCallback.data[i](isConnected);
+        }
+
+        isConnectedToWifi = isConnected;
+    }
+}
 
 #endif
