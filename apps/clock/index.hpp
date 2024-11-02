@@ -12,7 +12,7 @@ namespace ClockApp
         SetAppTitle("Clock", 5);
     }
 
-    void Scroll(unsigned char direction)
+    void Scroll(signed char direction)
     {
     }
 

@@ -1,7 +1,7 @@
 #ifndef APP_RENDERER_HPP
 #define APP_RENDERER_HPP
 
-// globals
+#include <map>
 #include "./globals.hpp"
 #include "./utils/structs/pos.hpp"
 #include "./cursor.hpp"
@@ -23,33 +23,29 @@ namespace AppRender
     bool RenderSubmit();
 };
 
-// apps
-#include "./apps/browser/index.hpp"
-#include "./apps/wifi/index.hpp"
-#include "./apps/login/index.hpp"
-#include "./apps/home/index.hpp"
-#include "./apps/eeprom-editor/index.hpp"
-#include "./apps/memory-editor/index.hpp"
-#include "./apps/flash-light/index.hpp"
-#include "./apps/pin-menager/index.hpp"
-#include "./apps/clock/index.hpp"
+struct AppPrototype
+{
+    String name;
+    byte (*Start)(const String &) = nullptr;
+    void (*Update)() = nullptr;
+    void (*Scroll)(signed char direction) = nullptr;
+    void (*OnExit)() = nullptr;
+    void (*OnClick)(Pos clickPos) = nullptr;
+    void (*Submit)() = nullptr;
+};
+
+std::map<String, AppPrototype> registeredApps;
+
+void RegisterApp(AppPrototype app)
+{
+    registeredApps[app.name] = app;
+}
+
+#include "./init-apps.hpp"
 
 bool AppRender::RenderSubmit()
 {
-    if (appOpened == "home")
-        return true;
-    if (appOpened == "flash-light")
-        return true;
-    if (appOpened == "eeprom-editor")
-        return true;
-    if (appOpened == "memory-editor")
-        return true;
-    if (appOpened == "pin-menager")
-        return true;
-    if (appOpened == "wifi")
-        return true;
-
-    return false;
+    return registeredApps[appOpened].Submit != nullptr;
 }
 
 void AppRender::UpdateCurrentApp()
@@ -57,38 +53,12 @@ void AppRender::UpdateCurrentApp()
     if (!isLoggedIn)
     {
         LoginApp::Update();
+        return;
     }
-    else if (appOpened == "browser")
+
+    if (registeredApps[appOpened].Update)
     {
-        BrowserApp::Update();
-    }
-    else if (appOpened == "flash-light")
-    {
-        FlashLightApp::Update();
-    }
-    else if (appOpened == "clock")
-    {
-        ClockApp::Update();
-    }
-    else if (appOpened == "wifi")
-    {
-        WifiApp::Update();
-    }
-    else if (appOpened == "pin-menager")
-    {
-        PinMengerApp::Update();
-    }
-    else if (appOpened == "eeprom-editor")
-    {
-        EEPROMEditor::Update();
-    }
-    else if (appOpened == "memory-editor")
-    {
-        MemoryEditor::Update();
-    }
-    else
-    {
-        HomeApp::Update();
+        registeredApps[appOpened].Update();
     }
 }
 
@@ -98,126 +68,58 @@ void AppRender::ExitCurrentApp()
     if (!isLoggedIn || appOpened == "login")
     {
         utils::cantExitApp();
+        return;
     }
-    else if (appOpened == "home")
+
+    if (registeredApps[appOpened].OnExit)
     {
-        appOpened = "login";
+        registeredApps[appOpened].OnExit();
+    }
+
+    if (appOpened == "home")
+    {
         isLoggedIn = false;
         Auth();
-    }
-    else if (appOpened == "browser")
-    {
-        BrowserApp::OnExit();
-        appOpened = "home";
     }
     else
     {
         appOpened = "home";
     }
-    ClearAppScreen();
 }
 
 void AppRender::ClickCurrentApp(Pos *pos)
 {
-    if (appOpened == "login" || !isLoggedIn)
+    if (!isLoggedIn)
     {
         LoginApp::OnClick(*pos);
-    }
-    else if (appOpened == "browser")
-    {
-        BrowserApp::OnClick(*pos);
-    }
-    else if (appOpened == "flash-light")
-    {
-        FlashLightApp::OnClick(*pos);
-    }
-    else if (appOpened == "wifi")
-    {
-        WifiApp::OnClick(*pos);
-    }
-    else if (appOpened == "clock")
-    {
-        ClockApp::OnClick(*pos);
+        return;
     }
 
-    else if (appOpened == "pin-menager")
+    if (registeredApps[appOpened].OnClick)
     {
-        PinMengerApp::OnClick(*pos);
-    }
-
-    else
-    {
-        HomeApp::OnClick(*pos);
+        registeredApps[appOpened].OnClick(*pos);
     }
 }
 
 void AppRender::ScrollCurrentApp(signed char direction)
 {
-    if (appOpened == "login" || !isLoggedIn)
+    if (!isLoggedIn)
     {
         LoginApp::Scroll(direction);
-    }
-    else if (appOpened == "browser")
-    {
-        BrowserApp::Scroll(direction);
-    }
-    else if (appOpened == "wifi")
-    {
-        WifiApp::Scroll(direction);
-    }
-    else if (appOpened == "pin-menager")
-    {
-        PinMengerApp::Scroll(direction);
-    }
-    else if (appOpened == "clock")
-    {
-        ClockApp::Scroll(direction);
+        return;
     }
 
-    else if (appOpened == "eeprom-editor")
+    if (registeredApps[appOpened].Scroll)
     {
-        EEPROMEditor::Scroll(direction);
-    }
-    else if (appOpened == "memory-editor")
-    {
-        MemoryEditor::Scroll(direction);
-    }
-    else
-    {
-        HomeApp::Scroll(direction);
+        registeredApps[appOpened].Scroll(direction);
     }
 }
 
 void AppRender::SubmitCurrentApp()
 {
-    if (appOpened == "home")
+    if (registeredApps[appOpened].Submit)
     {
-        HomeApp::Submit();
-    }
-    else if (appOpened == "flash-light")
-    {
-        FlashLightApp::Submit();
-    }
-    else if (appOpened == "wifi")
-    {
-        WifiApp::Submit();
-    }
-    else if (appOpened == "clock")
-    {
-        ClockApp::Submit();
-    }
-
-    else if (appOpened == "pin-menager")
-    {
-        PinMengerApp::Submit();
-    }
-    else if (appOpened == "eeprom-editor")
-    {
-        EEPROMEditor::Submit();
-    }
-    else if (appOpened == "memory-editor")
-    {
-        MemoryEditor::Submit();
+        registeredApps[appOpened].Submit();
     }
 }
 
@@ -226,18 +128,12 @@ char AppRender::GetCursorPosChar()
     if (Cursor::pos.x < 19 && Cursor::pos.y > 0)
     {
         char charUnderCursor = appScreenData[Cursor::pos.x][Cursor::pos.y - 1];
-        if (charUnderCursor == ' ')
-            return '-';
-        else
-            return charUnderCursor;
+        return charUnderCursor == ' ' ? '-' : charUnderCursor;
     }
     if (Cursor::pos.x < 16 && Cursor::pos.y == 0)
     {
         char charUnderCursor = appTitle[Cursor::pos.x];
-        if (charUnderCursor == ' ')
-            return '-';
-        else
-            return charUnderCursor;
+        return charUnderCursor == ' ' ? '-' : charUnderCursor;
     }
     if (Cursor::pos.collidesWith({19, 0}))
         return 'x';
@@ -252,7 +148,6 @@ char AppRender::GetCursorPosChar()
 
 void AppRender::UpdateView()
 {
-    // app view
     for (int y = 0; y < 3; y++)
     {
         for (int x = 0; x < 19; x++)
@@ -269,7 +164,6 @@ void AppRender::UpdateView()
 void AppRender::UpdateLoop(Pos pos, byte)
 {
     UpdateCurrentApp();
-    // app title
     lcd.home();
     for (int i = 0; i < 16; i++)
     {
@@ -279,33 +173,16 @@ void AppRender::UpdateLoop(Pos pos, byte)
             lcd.write(appTitle[i]);
         }
     }
-    // space aufter title
     if (!Cursor::pos.collidesWith({16, 0}))
-    {
-        lcd.setCursor(16, 0);
-        lcd.write(' ');
-    }
-    // draw hovered char
+        lcd.setCursor(16, 0), lcd.write(' ');
     if (!Cursor::pos.collidesWith({17, 0}))
-    {
-        lcd.setCursor(17, 0);
-        lcd.write(GetCursorPosChar());
-    }
-    // space after hovered char
+        lcd.setCursor(17, 0), lcd.write(GetCursorPosChar());
     if (!Cursor::pos.collidesWith({18, 0}))
-    {
-        lcd.setCursor(18, 0);
-        lcd.write(' ');
-    }
-    // exit
+        lcd.setCursor(18, 0), lcd.write(' ');
     if (!Cursor::pos.collidesWith({19, 0}))
-    {
-        lcd.setCursor(19, 0);
-        lcd.write('x');
-    }
+        lcd.setCursor(19, 0), lcd.write('x');
 
     UpdateView();
-    // scrolls
     lcd.setCursor(19, 1);
     lcd.write(RenderSubmit() ? confirm_charcode : ' ');
     lcd.setCursor(19, 2);
@@ -317,27 +194,21 @@ void AppRender::UpdateLoop(Pos pos, byte)
 void AppRender::Update()
 {
     Pos cursorPos = Cursor::Get<byte>(UpdateLoop, 0);
-
-    // wait for release
     while (digitalRead(swPin) == LOW)
         ;
 
-    // app click
     if (cursorPos.x < 19 && cursorPos.y > 0)
     {
         ClickCurrentApp(&cursorPos);
     }
-    // exit
     else if (cursorPos.collidesWith({19, 0}))
     {
         ExitCurrentApp();
     }
-    // submit
     else if (cursorPos.collidesWith({19, 1}))
     {
         SubmitCurrentApp();
     }
-    // scrolling (up, down)
     else if (cursorPos.collidesWith({19, 2}))
     {
         ScrollCurrentApp(1);

@@ -1,6 +1,7 @@
 #ifndef EXTERN_HPP
 #define EXTERN_HPP
 
+#include <iterator>
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 #include <FS.h>
@@ -13,5 +14,6 @@
 #include <freertos/task.h>
 #include <LiquidCrystal_I2C.h>
 #include <HTTPClient.h>
+#include <vector>;
 
 #endif

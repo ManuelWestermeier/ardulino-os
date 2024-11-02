@@ -12,6 +12,7 @@ namespace WifiMenager
 
     void Update()
     {
+        return;
         bool isConnected = WiFi.status() == WL_CONNECTED;
 
         if (isConnectedToWifi != isConnected)

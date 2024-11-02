@@ -14,6 +14,7 @@
 
 void setup()
 {
+  InitializeApps();
   WifiMenager::Update();
   Init();
   Auth();
