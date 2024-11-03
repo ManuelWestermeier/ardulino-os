@@ -11,6 +11,7 @@
 #include "./utils/index.hpp"
 #include "./app-renderer.hpp"
 #include "./auth.hpp"
+#include "./init.hpp"
 
 void setup()
 {
@@ -18,7 +19,6 @@ void setup()
   WifiMenager::Update();
   Init();
   Auth();
-  WifiMenager::Update();
 }
 
 void loop()

@@ -19,7 +19,7 @@ AppPrototype homeApp = {
     "home",
     nullptr, // Start
     HomeApp::Update,
-    nullptr,          // Scroll
+    HomeApp::Scroll,  // Scroll
     nullptr,          // OnExit
     HomeApp::OnClick, // OnClick
     HomeApp::Submit,
