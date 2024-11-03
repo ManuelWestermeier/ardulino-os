@@ -3,7 +3,7 @@
 #ifndef APP_RENDERER_HPP
 #define APP_RENDERER_HPP
 
-// globals
+#include <map>
 #include "./globals.hpp"
 #include "./utils/structs/pos.hpp"
 #include "./cursor.hpp"
@@ -25,33 +25,29 @@ namespace AppRender
     bool RenderSubmit();
 };
 
-// apps
-#include "./apps/browser/index.hpp"
-#include "./apps/wifi/index.hpp"
-#include "./apps/login/index.hpp"
-#include "./apps/home/index.hpp"
-#include "./apps/eeprom-editor/index.hpp"
-#include "./apps/memory-editor/index.hpp"
-#include "./apps/flash-light/index.hpp"
-#include "./apps/pin-menager/index.hpp"
-#include "./apps/clock/index.hpp"
+struct AppPrototype
+{
+    String name;
+    byte (*Start)(const String &) = nullptr;
+    void (*Update)() = nullptr;
+    void (*Scroll)(signed char direction) = nullptr;
+    void (*OnExit)() = nullptr;
+    void (*OnClick)(Pos clickPos) = nullptr;
+    void (*Submit)() = nullptr;
+};
+
+std::map<String, AppPrototype> registeredApps;
+
+void RegisterApp(AppPrototype app)
+{
+    registeredApps[app.name] = app;
+}
+
+#include "./init-apps.hpp"
 
 bool AppRender::RenderSubmit()
 {
-    if (appOpened == "home")
-        return true;
-    if (appOpened == "flash-light")
-        return true;
-    if (appOpened == "eeprom-editor")
-        return true;
-    if (appOpened == "memory-editor")
-        return true;
-    if (appOpened == "pin-menager")
-        return true;
-    if (appOpened == "wifi")
-        return true;
-
-    return false;
+    return registeredApps[appOpened].Submit != nullptr;
 }
 
 void AppRender::UpdateCurrentApp()
@@ -59,38 +55,12 @@ void AppRender::UpdateCurrentApp()
     if (!isLoggedIn)
     {
         LoginApp::Update();
+        return;
     }
-    else if (appOpened == "browser")
+
+    if (registeredApps[appOpened].Update)
     {
-        BrowserApp::Update();
-    }
-    else if (appOpened == "flash-light")
-    {
-        FlashLightApp::Update();
-    }
-    else if (appOpened == "clock")
-    {
-        ClockApp::Update();
-    }
-    else if (appOpened == "wifi")
-    {
-        WifiApp::Update();
-    }
-    else if (appOpened == "pin-menager")
-    {
-        PinMengerApp::Update();
-    }
-    else if (appOpened == "eeprom-editor")
-    {
-        EEPROMEditor::Update();
-    }
-    else if (appOpened == "memory-editor")
-    {
-        MemoryEditor::Update();
-    }
-    else
-    {
-        HomeApp::Update();
+        registeredApps[appOpened].Update();
     }
 }
 
@@ -100,126 +70,58 @@ void AppRender::ExitCurrentApp()
     if (!isLoggedIn || appOpened == "login")
     {
         utils::cantExitApp();
+        return;
     }
-    else if (appOpened == "home")
+
+    if (registeredApps[appOpened].OnExit)
     {
-        appOpened = "login";
+        registeredApps[appOpened].OnExit();
+    }
+
+    if (appOpened == "home")
+    {
         isLoggedIn = false;
         Auth();
-    }
-    else if (appOpened == "browser")
-    {
-        BrowserApp::OnExit();
-        appOpened = "home";
     }
     else
     {
         appOpened = "home";
     }
-    ClearAppScreen();
 }
 
 void AppRender::ClickCurrentApp(Pos *pos)
 {
-    if (appOpened == "login" || !isLoggedIn)
+    if (!isLoggedIn)
     {
         LoginApp::OnClick(*pos);
-    }
-    else if (appOpened == "browser")
-    {
-        BrowserApp::OnClick(*pos);
-    }
-    else if (appOpened == "flash-light")
-    {
-        FlashLightApp::OnClick(*pos);
-    }
-    else if (appOpened == "wifi")
-    {
-        WifiApp::OnClick(*pos);
-    }
-    else if (appOpened == "clock")
-    {
-        ClockApp::OnClick(*pos);
+        return;
     }
 
-    else if (appOpened == "pin-menager")
+    if (registeredApps[appOpened].OnClick)
     {
-        PinMengerApp::OnClick(*pos);
-    }
-
-    else
-    {
-        HomeApp::OnClick(*pos);
+        registeredApps[appOpened].OnClick(*pos);
     }
 }
 
 void AppRender::ScrollCurrentApp(signed char direction)
 {
-    if (appOpened == "login" || !isLoggedIn)
+    if (!isLoggedIn)
     {
         LoginApp::Scroll(direction);
-    }
-    else if (appOpened == "browser")
-    {
-        BrowserApp::Scroll(direction);
-    }
-    else if (appOpened == "wifi")
-    {
-        WifiApp::Scroll(direction);
-    }
-    else if (appOpened == "pin-menager")
-    {
-        PinMengerApp::Scroll(direction);
-    }
-    else if (appOpened == "clock")
-    {
-        ClockApp::Scroll(direction);
+        return;
     }
 
-    else if (appOpened == "eeprom-editor")
+    if (registeredApps[appOpened].Scroll)
     {
-        EEPROMEditor::Scroll(direction);
-    }
-    else if (appOpened == "memory-editor")
-    {
-        MemoryEditor::Scroll(direction);
-    }
-    else
-    {
-        HomeApp::Scroll(direction);
+        registeredApps[appOpened].Scroll(direction);
     }
 }
 
 void AppRender::SubmitCurrentApp()
 {
-    if (appOpened == "home")
+    if (registeredApps[appOpened].Submit)
     {
-        HomeApp::Submit();
-    }
-    else if (appOpened == "flash-light")
-    {
-        FlashLightApp::Submit();
-    }
-    else if (appOpened == "wifi")
-    {
-        WifiApp::Submit();
-    }
-    else if (appOpened == "clock")
-    {
-        ClockApp::Submit();
-    }
-
-    else if (appOpened == "pin-menager")
-    {
-        PinMengerApp::Submit();
-    }
-    else if (appOpened == "eeprom-editor")
-    {
-        EEPROMEditor::Submit();
-    }
-    else if (appOpened == "memory-editor")
-    {
-        MemoryEditor::Submit();
+        registeredApps[appOpened].Submit();
     }
 }
 
@@ -228,18 +130,12 @@ char AppRender::GetCursorPosChar()
     if (Cursor::pos.x < 19 && Cursor::pos.y > 0)
     {
         char charUnderCursor = appScreenData[Cursor::pos.x][Cursor::pos.y - 1];
-        if (charUnderCursor == ' ')
-            return '-';
-        else
-            return charUnderCursor;
+        return charUnderCursor == ' ' ? '-' : charUnderCursor;
     }
     if (Cursor::pos.x < 16 && Cursor::pos.y == 0)
     {
         char charUnderCursor = appTitle[Cursor::pos.x];
-        if (charUnderCursor == ' ')
-            return '-';
-        else
-            return charUnderCursor;
+        return charUnderCursor == ' ' ? '-' : charUnderCursor;
     }
     if (Cursor::pos.collidesWith({19, 0}))
         return 'x';
@@ -254,7 +150,6 @@ char AppRender::GetCursorPosChar()
 
 void AppRender::UpdateView()
 {
-    // app view
     for (int y = 0; y < 3; y++)
     {
         for (int x = 0; x < 19; x++)
@@ -271,7 +166,6 @@ void AppRender::UpdateView()
 void AppRender::UpdateLoop(Pos pos, byte)
 {
     UpdateCurrentApp();
-    // app title
     lcd.home();
     for (int i = 0; i < 16; i++)
     {
@@ -281,33 +175,16 @@ void AppRender::UpdateLoop(Pos pos, byte)
             lcd.write(appTitle[i]);
         }
     }
-    // space aufter title
     if (!Cursor::pos.collidesWith({16, 0}))
-    {
-        lcd.setCursor(16, 0);
-        lcd.write(' ');
-    }
-    // draw hovered char
+        lcd.setCursor(16, 0), lcd.write(' ');
     if (!Cursor::pos.collidesWith({17, 0}))
-    {
-        lcd.setCursor(17, 0);
-        lcd.write(GetCursorPosChar());
-    }
-    // space after hovered char
+        lcd.setCursor(17, 0), lcd.write(GetCursorPosChar());
     if (!Cursor::pos.collidesWith({18, 0}))
-    {
-        lcd.setCursor(18, 0);
-        lcd.write(' ');
-    }
-    // exit
+        lcd.setCursor(18, 0), lcd.write(' ');
     if (!Cursor::pos.collidesWith({19, 0}))
-    {
-        lcd.setCursor(19, 0);
-        lcd.write('x');
-    }
+        lcd.setCursor(19, 0), lcd.write('x');
 
     UpdateView();
-    // scrolls
     lcd.setCursor(19, 1);
     lcd.write(RenderSubmit() ? confirm_charcode : ' ');
     lcd.setCursor(19, 2);
@@ -319,27 +196,21 @@ void AppRender::UpdateLoop(Pos pos, byte)
 void AppRender::Update()
 {
     Pos cursorPos = Cursor::Get<byte>(UpdateLoop, 0);
-
-    // wait for release
     while (digitalRead(swPin) == LOW)
         ;
 
-    // app click
     if (cursorPos.x < 19 && cursorPos.y > 0)
     {
         ClickCurrentApp(&cursorPos);
     }
-    // exit
     else if (cursorPos.collidesWith({19, 0}))
     {
         ExitCurrentApp();
     }
-    // submit
     else if (cursorPos.collidesWith({19, 1}))
     {
         SubmitCurrentApp();
     }
-    // scrolling (up, down)
     else if (cursorPos.collidesWith({19, 2}))
     {
         ScrollCurrentApp(1);
@@ -513,7 +384,7 @@ namespace ClockApp
         SetAppTitle("Clock", 5);
     }
 
-    void Scroll(unsigned char direction)
+    void Scroll(signed char direction)
     {
     }
 
@@ -744,6 +615,60 @@ namespace FlashLightApp
 
 #endif
 
+//filepath: apps\home\doc.cpp
+/*
+ * HomeApp Module
+ *
+ * This module defines the functionality of the "Home" app in the system,
+ * allowing users to view and manage a list of applications (apps) and
+ * external links, known as HomeLinks, which appear on the home screen.
+ *
+ * Main components:
+ *
+ * - `HomeLink` struct: Represents an individual link or app on the home screen,
+ *   storing details like name, app ID, a flag indicating whether it’s an app
+ *   (`isApp`), and any optional start arguments.
+ *
+ * - `homeLinks` vector: Stores all HomeLink instances, including:
+ *   1. **Default Apps**: Predefined apps that are always available, such as
+ *      "Wifi", "Browser", and "Clock". These default apps are initialized
+ *      within the `Init` function and are marked with `isApp = true`.
+ *   2. **User-Defined Links**: Additional links, which can be created by users
+ *      and are stored in `/app-links.data`. These links are loaded on startup
+ *      if they are unique and marked with `isApp = false`.
+ *
+ * - `appSelect` object: Provides selection and scrolling functionality for
+ *   navigating the `homeLinks`.
+ *
+ * - Core Functions:
+ *   - `AddHomeLink`: Adds a new HomeLink if its name is unique, saving it to
+ *     both memory and a file (`/app-links.data`). The link's name, app ID,
+ *     and any start argument are stored in `base64` encoded format to ensure
+ *     safe and consistent file storage.
+ *   - `RemoveHomeLink`: Removes a specified HomeLink, updating the list in
+ *     memory and rewriting the file without the deleted link.
+ *   - `Init`: Initializes the default apps and loads additional user-defined
+ *     links from the `/app-links.data` file, decoding `base64` values to retrieve
+ *     the original names, app IDs, and arguments. This ensures all links are
+ *     unique in `homeLinks`.
+ *   - `Update`, `Scroll`, `SwitchApp`: Handle updating the display, scrolling
+ *     through the links, and switching to a selected app when clicked.
+ *
+ * - File Persistence and `base64` Encoding: Uses `LittleFS` to store
+ *   additional HomeLinks persistently, encoding each link's properties
+ *   (name, app ID, and start arguments) in `base64` format within `/app-links.data`.
+ *   This ensures data integrity and compatibility across different devices.
+ *
+ * Organization of `homeLinks`:
+ *   - The `homeLinks` vector maintains a structured order by first adding
+ *     predefined default apps during initialization, followed by user-defined
+ *     links from the filesystem.
+ *   - Each link is checked for uniqueness using `IsHomeLinkUnique` to avoid
+ *     duplicate entries, and entries are loaded from `/app-links.data` only
+ *     if not already present.
+ */
+// author chatgpt (i havent rode it)
+
 //filepath: apps\home\index.hpp
 #ifndef APPS_HOME_HPP
 #define APPS_HOME_HPP
@@ -758,28 +683,181 @@ namespace FlashLightApp
 // apps
 #include "../create-account/index.hpp"
 
+struct HomeLink
+{
+    String name;
+    String appId;
+    bool isApp;
+    String startArgument;
+
+    HomeLink(String _name, String _appId, bool _isApp = true, String _startArgument = "")
+        : name(_name), appId(_appId), isApp(_isApp), startArgument(_startArgument) {}
+};
+
 namespace HomeApp
 {
     String state;
+    std::vector<HomeLink> homeLinks;
+    Select appSelect{nullptr, 0, 1};
 
-    String appOptions[9] = {
-        "Wifi",
-        "Browser",
-        "Clock",
-        "Flash Light",
-        "Login",
-        "Pin Menager",
-        "EEPROM Editor",
-        "Memory Editor",
-        "Create Account",
-    };
+    void SetAppSelect()
+    {
+        if (appSelect.options != nullptr)
+        {
+            delete[] appSelect.options;
+        }
 
-    Select appSelect{appOptions, 9, 1};
+        appSelect.options = new String[homeLinks.size()];
+        for (size_t i = 0; i < homeLinks.size(); i++)
+        {
+            appSelect.options[i] = homeLinks[i].name;
+        }
+        appSelect.optionsLength = homeLinks.size();
+    }
+
+    String EscapeString(const String &input)
+    {
+        String escaped = input;
+        escaped.replace("\\", "\\\\"); // Escape backslashes
+        escaped.replace("\n", "\\n");  // Escape newlines
+        escaped.replace("|", "\\|");   // Escape pipes
+        return escaped;
+    }
+
+    String DeescapeString(const String &input)
+    {
+        String deescaped = input;
+        deescaped.replace("\\n", "\n");  // Deescape newlines
+        deescaped.replace("\\|", "|");   // Deescape pipes
+        deescaped.replace("\\\\", "\\"); // Deescape backslashes
+        return deescaped;
+    }
+
+    bool IsHomeLinkUnique(const String &name)
+    {
+        for (const auto &link : homeLinks)
+        {
+            if (link.name == name)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    void LoadHomeLinksFromFile()
+    {
+        File file = LittleFS.open("/app-links.data", "r");
+        if (!file)
+        {
+            Serial.println("Failed to open app-links.data");
+            return;
+        }
+
+        while (file.available())
+        {
+            String line = file.readStringUntil('\n');
+            line.replace("|", "\n"); // Convert the separator to a newline for processing
+
+            String parts[3];
+            int count = 0;
+
+            for (int i = 0; i < line.length(); i++)
+            {
+                if (line[i] == '\n' || i == line.length() - 1)
+                {
+                    if (i == line.length() - 1)
+                    {
+                        parts[count++] += line[i];
+                    }
+                    count++;
+                    if (count >= 3)
+                        break;
+                }
+                else
+                {
+                    parts[count] += line[i];
+                }
+            }
+
+            if (count == 3)
+            {
+                String name = DeescapeString(parts[0]);
+                String appId = DeescapeString(parts[1]);
+                String startArg = DeescapeString(parts[2]);
+
+                if (IsHomeLinkUnique(name))
+                {
+                    homeLinks.push_back(HomeLink(name, appId, true, startArg));
+                }
+            }
+        }
+
+        file.close();
+    }
+
+    void Init()
+    {
+        // Load default home links
+        homeLinks = {
+            HomeLink("Wifi", "wifi"),
+            HomeLink("Browser", "browser"),
+            HomeLink("Clock", "clock"),
+            HomeLink("Flash Light", "flash-light"),
+            HomeLink("Pin Menager", "pin-menager"),
+            HomeLink("EEPROM Editor", "eeprom-editor"),
+            HomeLink("Memory Editor", "memory-editor"),
+            HomeLink("Login", "login"),
+            HomeLink("Create Account", "create-account"),
+        };
+
+        // Load links from file
+        LoadHomeLinksFromFile();
+
+        // Update appSelect after loading
+        SetAppSelect();
+    }
+
+    void AddHomeLink(const HomeLink &link)
+    {
+        if (IsHomeLinkUnique(link.name))
+        {
+            homeLinks.push_back(link);
+            SetAppSelect();
+            // Append to the file
+            File file = LittleFS.open("/app-links.data", "a");
+            if (file)
+            {
+                file.print(EscapeString(link.name) + "|" + EscapeString(link.appId) + "|" + EscapeString(link.startArgument) + "\n");
+                file.close();
+            }
+        }
+    }
+
+    void RemoveHomeLink(const String &name)
+    {
+        homeLinks.erase(
+            std::remove_if(homeLinks.begin(), homeLinks.end(),
+                           [&](const HomeLink &link)
+                           { return link.name == name; }),
+            homeLinks.end());
+
+        SetAppSelect();
+        // Update the file by rewriting all home links
+        File file = LittleFS.open("/app-links.data", "w");
+        if (file)
+        {
+            for (const auto &link : homeLinks)
+            {
+                file.print(EscapeString(link.name) + "|" + EscapeString(link.appId) + "|" + EscapeString(link.startArgument) + "\n");
+            }
+            file.close();
+        }
+    }
 
     void Update()
     {
         SetAppTitle("Home", 4);
-        // update select
         appSelect.Update();
     }
 
@@ -793,44 +871,21 @@ namespace HomeApp
         int clickedApp = appSelect.OnClick();
         ClearAppScreen();
 
-        if (appOptions[clickedApp] == "Browser")
-        {
-            AppRender::appOpened = "browser";
-        }
-        else if (appOptions[clickedApp] == "Flash Light")
-        {
-            AppRender::appOpened = "flash-light";
-        }
-        else if (appOptions[clickedApp] == "Wifi")
-        {
-            AppRender::appOpened = "wifi";
-        }
-        else if (appOptions[clickedApp] == "Clock")
-        {
-            AppRender::appOpened = "clock";
-        }
-        else if (appOptions[clickedApp] == "Pin Menager")
-        {
-            AppRender::appOpened = "pin-menager";
-        }
-        else if (appOptions[clickedApp] == "EEPROM Editor")
-        {
-            AppRender::appOpened = "eeprom-editor";
-        }
-        else if (appOptions[clickedApp] == "Memory Editor")
-        {
-            AppRender::appOpened = "memory-editor";
-        }
-        else if (appOptions[clickedApp] == "Create Account")
+        const HomeLink &selectedLink = homeLinks[clickedApp];
+
+        if (selectedLink.name == "Create Account")
         {
             isLoggedIn = false;
             CreateAccountApp::Create();
         }
-        else if (appOptions[clickedApp] == "Login")
+        else
         {
-            AppRender::appOpened = "login";
-            isLoggedIn = false;
-            Auth();
+            AppRender::appOpened = selectedLink.appId;
+
+            if (selectedLink.isApp && registeredApps[AppRender::appOpened].Start)
+            {
+                registeredApps[AppRender::appOpened].Start(selectedLink.startArgument);
+            }
         }
     }
 
@@ -1620,13 +1675,14 @@ void WifiApp::Update()
 #include "./utils/index.hpp"
 #include "./app-renderer.hpp"
 #include "./auth.hpp"
+#include "./init.hpp"
 
 void setup()
 {
+  InitializeApps();
   WifiMenager::Update();
   Init();
   Auth();
-  WifiMenager::Update();
 }
 
 void loop()
@@ -1933,6 +1989,7 @@ namespace strings
 #ifndef EXTERN_HPP
 #define EXTERN_HPP
 
+#include <iterator>
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 #include <FS.h>
@@ -1945,6 +2002,7 @@ namespace strings
 #include <freertos/task.h>
 #include <LiquidCrystal_I2C.h>
 #include <HTTPClient.h>
+#include <vector>;
 
 #endif
 
@@ -2048,30 +2106,165 @@ void InitData()
   ClearAppScreen();
 }
 
+#endif
+
+//filepath: init-apps.hpp
+#ifndef INIT_APPS_HPP
+#define INIT_APPS_HPP
+
+#include "./globals.hpp"
+#include "./app-renderer.hpp"
+
+#include "./apps/browser/index.hpp"
+#include "./apps/wifi/index.hpp"
+#include "./apps/login/index.hpp"
+#include "./apps/home/index.hpp"
+#include "./apps/eeprom-editor/index.hpp"
+#include "./apps/memory-editor/index.hpp"
+#include "./apps/flash-light/index.hpp"
+#include "./apps/pin-menager/index.hpp"
+#include "./apps/clock/index.hpp"
+
+// Define prototypes for each app
+AppPrototype homeApp = {
+    "home",
+    nullptr, // Start
+    HomeApp::Update,
+    HomeApp::Scroll,  // Scroll
+    nullptr,          // OnExit
+    HomeApp::OnClick, // OnClick
+    HomeApp::Submit,
+};
+
+AppPrototype browserApp = {
+    "browser",
+    nullptr, // Start
+    BrowserApp::Update,
+    nullptr, // Scroll
+    BrowserApp::OnExit,
+    BrowserApp::OnClick,
+    nullptr, // Submit
+};
+
+AppPrototype wifiApp = {
+    "wifi",
+    nullptr, // Start
+    WifiApp::Update,
+    WifiApp::Scroll,
+    nullptr, // OnExit
+    WifiApp::OnClick,
+    WifiApp::Submit,
+};
+
+AppPrototype loginApp = {
+    "login",
+    nullptr, // Start
+    LoginApp::Update,
+    LoginApp::Scroll,
+    nullptr, // OnExit
+    LoginApp::OnClick,
+    nullptr, // Submit
+};
+
+AppPrototype eepromEditorApp = {
+    "eeprom-editor",
+    nullptr, // Start
+    EEPROMEditor::Update,
+    EEPROMEditor::Scroll,
+    nullptr, // OnExit
+    nullptr, // OnClick
+    EEPROMEditor::Submit,
+};
+
+AppPrototype memoryEditorApp = {
+    "memory-editor",
+    nullptr, // Start
+    MemoryEditor::Update,
+    MemoryEditor::Scroll,
+    nullptr, // OnExit
+    nullptr, // OnClick
+    MemoryEditor::Submit,
+};
+
+AppPrototype flashLightApp = {
+    "flash-light",
+    nullptr, // Start
+    FlashLightApp::Update,
+    nullptr,                // Scroll
+    nullptr,                // OnExit
+    FlashLightApp::OnClick, // OnClick
+    FlashLightApp::Submit,
+};
+
+AppPrototype pinManagerApp = {
+    "pin-menager",
+    nullptr, // Start
+    PinMengerApp::Update,
+    PinMengerApp::Scroll,
+    nullptr,               // OnExit
+    PinMengerApp::OnClick, // OnClick
+    PinMengerApp::Submit,
+};
+
+AppPrototype clockApp = {
+    "clock",
+    nullptr, // Start
+    ClockApp::Update,
+    ClockApp::Scroll,
+    nullptr,           // OnExit
+    ClockApp::OnClick, // OnClick
+    ClockApp::Submit,
+};
+
+// Register all app prototypes at initialization
+void InitializeApps()
+{
+    RegisterApp(homeApp);
+    RegisterApp(browserApp);
+    RegisterApp(wifiApp);
+    RegisterApp(loginApp);
+    RegisterApp(eepromEditorApp);
+    RegisterApp(memoryEditorApp);
+    RegisterApp(flashLightApp);
+    RegisterApp(pinManagerApp);
+    RegisterApp(clockApp);
+}
+
+#endif
+
+
+//filepath: init.hpp
+#ifndef INIT_HPP
+#define INIT_HPP
+
+#include "./globals.hpp"
+
 void Init()
 {
-  // lcd display
-  lcd.init();
-  lcd.backlight();
-  // serial
-  Serial.begin(9600);
-  Serial.println("Starting");
-  // eeprom
-  EEPROM.begin(EEPROM_SIZE);
-  FlashHashMap::begin();
-  // create characters
-  lcd.createChar(cursor_charcode, cursorChar[0]);
-  lcd.createChar(confirm_charcode, confirmChar);
-  lcd.createChar(upArrowChar, upArrow);
-  lcd.createChar(downArrowChar, downArrow);
-  // pin modes
-  pinMode(swPin, INPUT_PULLUP);
-  pinMode(ledPin, OUTPUT);
-  // init screen data
-  InitData();
-  AsyncWifiConnect();
-
-  Time::Init();
+    // lcd display
+    lcd.init();
+    lcd.backlight();
+    // serial
+    Serial.begin(9600);
+    Serial.println("Starting");
+    // eeprom
+    EEPROM.begin(EEPROM_SIZE);
+    FlashHashMap::begin();
+    // create characters
+    lcd.createChar(cursor_charcode, cursorChar[0]);
+    lcd.createChar(confirm_charcode, confirmChar);
+    lcd.createChar(upArrowChar, upArrow);
+    lcd.createChar(downArrowChar, downArrow);
+    // pin modes
+    pinMode(swPin, INPUT_PULLUP);
+    pinMode(ledPin, OUTPUT);
+    // init screen data
+    InitData();
+    AsyncWifiConnect();
+    // init the time
+    Time::Init();
+    // init home app (get home links from fs...)
+    HomeApp::Init();
 }
 
 #endif
@@ -3342,6 +3535,7 @@ namespace WifiMenager
 
     void Update()
     {
+        return;
         bool isConnected = WiFi.status() == WL_CONNECTED;
 
         if (isConnectedToWifi != isConnected)
