@@ -69,6 +69,19 @@ struct AppStateManager
         currentLocation = root;
     }
 
+    AppStateManager(Location root, std::vector<Route> _routes)
+    {
+        routes = _routes;
+        currentLocation = root;
+    }
+
+    AppStateManager(Location root, std::vector<Route> _routes, NoPageCallback _noPage)
+    {
+        routes = _routes;
+        currentLocation = root;
+        noPage = _noPage;
+    }
+
     void Update()
     {
         for (const auto &route : routes)
