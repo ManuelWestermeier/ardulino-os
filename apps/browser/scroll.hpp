@@ -6,7 +6,6 @@
 
 void BrowserApp::Scroll(signed char direction)
 {
-    SetAppTitle("Browser", 7);
 }
 
 #endif

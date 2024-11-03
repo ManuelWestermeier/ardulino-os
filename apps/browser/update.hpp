@@ -31,10 +31,7 @@ void BrowserApp::Update()
     if (!WaitForConnected())
         return;
 
-    if (State::appPage == Home) // Fixed appState to appPage here
-    {
-        goToViewInput.Draw();
-    }
+    pages.Update();
 }
 
 #endif

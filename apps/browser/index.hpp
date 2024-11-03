@@ -7,15 +7,7 @@
 #include "../../utils/structs/clickable.hpp"
 #include "../../utils/structs/input.hpp"
 #include "../../utils/structs/stored-map.hpp"
-
-enum AppPage
-{
-    Home,
-    Settings,
-    Search,
-    History,
-    Bookmarks,
-};
+#include "../../utils/structs/app-state-menager.hpp"
 
 namespace BrowserApp
 {
@@ -23,10 +15,10 @@ namespace BrowserApp
     Btn connectToWifiButton = Button(2, 0, "Connect"); // Fixed typo here
     Input goToViewInput(1, 0, 19, "website ip:port...", "192.168.178.33");
 
+    AppStateManager pages({RoutePart("home")});
+
     namespace State
     {
-        AppPage appPage = Home; // Use 'appPage' not 'appState'
-        String currentWebsite = "";
         FlashHashMap webSiteData("web-site-data");
     }
 
