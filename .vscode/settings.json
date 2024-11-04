@@ -25,6 +25,18 @@
     "xtree": "cpp",
     "xutility": "cpp",
     "functional": "cpp",
-    "xstring": "cpp"
+    "xstring": "cpp",
+    "algorithm": "cpp",
+    "atomic": "cpp",
+    "cctype": "cpp",
+    "cmath": "cpp",
+    "ctime": "cpp",
+    "list": "cpp",
+    "memory": "cpp",
+    "optional": "cpp",
+    "string": "cpp",
+    "typeinfo": "cpp",
+    "unordered_map": "cpp",
+    "xhash": "cpp"
   }
 }
