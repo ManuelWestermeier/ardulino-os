@@ -8,9 +8,9 @@ void WifiApp::FastConnect()
 {
     try
     {
-        ClearAppScreen();                 // Clear the display before scanning
-        Text(1, 1, "Scanning...").Draw(); // Display scanning message
-        AppRender::UpdateView();          // Update the screen
+        ClearAppScreen();                       // Clear the display before scanning
+        Text(1, 1, "Scanning... (10s)").Draw(); // Display scanning message
+        AppRender::UpdateView();                // Update the screen
 
         // Scan for available WiFi networks
         int wifiCount = WifiScanStart(true, true);
@@ -29,7 +29,7 @@ void WifiApp::FastConnect()
         bool isOpenNetwork = false; // Declare isOpenNetwork here so it can be used later
 
         // Loop through WiFi networks for selection with the joystick
-        while (wifiIndex < wifiCount && wifiIndex > -1)
+        while (wifiIndex < wifiCount)
         {
             // Get current WiFi network's SSID and encryption type
             String ssid = WiFi.SSID(wifiIndex);
@@ -87,7 +87,15 @@ void WifiApp::FastConnect()
                 // If the network is not open and not in wifisConnected, skip to the next
                 wifiIndex++;
                 if (wifiIndex >= wifiCount)
-                    wifiIndex = 0; // Loop back to first network
+                {
+                    ClearAppScreen();
+                    Text(1, 1, "No Wifis you").Draw();
+                    Text(2, 1, "can connect").Draw();
+                    Text(3, 1, "try [Wifi Scan]").Draw();
+                    delay(2000);
+                    ClearAppScreen();
+                    return;
+                }
             }
         }
 

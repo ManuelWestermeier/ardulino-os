@@ -8,17 +8,18 @@ struct FlashHashMap
 {
     String root;
 
-    // Constructor to initialize the root directory with the escaped map ID
-    FlashHashMap(const String &mapId)
-    {
-        root = "/maps/" + base64Encode(mapId) + "/"; // Set the root directory based on Base64 encoded map ID
-        createDirectory();                           // Create the directory if it doesn't exist
-    }
-
     // Method to begin LittleFS
     static void begin()
     {
         LittleFS.begin();
+    }
+
+    // Constructor to initialize the root directory with the escaped map ID
+    FlashHashMap(const String &mapId)
+    {
+        LittleFS.begin();
+        root = "/maps/" + base64Encode(mapId) + "/"; // Set the root directory based on Base64 encoded map ID
+        createDirectory();                           // Create the directory if it doesn't exist
     }
 
     // Method to Base64 encode keys and map IDs

@@ -10,6 +10,13 @@ struct Text
     byte x;
     String text;
 
+    Text(byte _y, byte _x, String _text)
+    {
+        y = _y;
+        x = _x;
+        text = _text;
+    }
+
     void Draw()
     {
         for (byte i = 0; i < x + text.length() - 1; i++)

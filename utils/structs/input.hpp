@@ -14,7 +14,7 @@ struct Input
     String value;      // User input value
 
     // Constructor to initialize the input field
-    Input(byte _y, byte _start, byte _end, const char *_placeholder, String _value = "")
+    Input(byte _y, byte _start, byte _end, const char *_placeholder = "", String _value = "")
     {
         y = _y;
         start = _start;

@@ -1,6 +1,7 @@
 #ifndef APPS_BROWSER_INDEX_HPP
 #define APPS_BROWSER_INDEX_HPP
 
+#include <functional>
 #include "../../utils/structs/pos.hpp"
 #include "../../globals.hpp"
 #include "../../utils/structs/text.hpp"
@@ -11,11 +12,19 @@
 
 namespace BrowserApp
 {
-    Text noWifiText(1, 1, "No Wifi");
-    Btn connectToWifiButton = Button(2, 0, "Connect"); // Fixed typo here
-    Input goToViewInput(1, 0, 19, "website ip:port...", "192.168.178.33");
+    namespace Pages
+    {
+        void NoPage(Location loc);
+        void Home(std::map<std::string, std::string>);
+    };
 
-    AppStateManager pages({RoutePart("home")});
+    std::function<void(Pos)> currentOnclickHandler = nullptr;
+
+    std::vector<Route> routes = {
+        // all routes
+        Route({RoutePart("home")}, Pages::Home),
+    };
+    AppStateManager pages({RoutePart("home")}, routes, Pages::NoPage);
 
     namespace State
     {
@@ -31,6 +40,9 @@ namespace BrowserApp
     void OnExit();
     void OnClick(Pos clickPos);
 };
+
+#include "./pages/no-page.hpp"
+#include "./pages/home.hpp"
 
 #include "./update.hpp"
 #include "./scroll.hpp"

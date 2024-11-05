@@ -10,8 +10,8 @@ bool BrowserApp::WaitForConnected()
     if (WiFi.status() != WL_CONNECTED)
     {
         // Render offline UI
-        noWifiText.Draw();
-        connectToWifiButton.Draw(); // Fixed typo here
+        Text(1, 1, "No Wifi").Draw();
+        Button(2, 0, "Connect").Draw(); // Fixed typo here
         wasConnected = WiFi.status() != WL_CONNECTED;
         return false;
     }
