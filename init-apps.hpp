@@ -27,12 +27,12 @@ AppPrototype homeApp = {
 
 AppPrototype browserApp = {
     "browser",
-    nullptr, // Start
+    BrowserApp::Start, // Start
     BrowserApp::Update,
-    nullptr, // Scroll
+    BrowserApp::Scroll, // Scroll
     BrowserApp::OnExit,
     BrowserApp::OnClick,
-    nullptr, // Submit
+    BrowserApp::Submit, // Submit
 };
 
 AppPrototype wifiApp = {

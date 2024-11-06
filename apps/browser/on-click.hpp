@@ -8,7 +8,7 @@
 
 void BrowserApp::OnClick(Pos clickPos)
 {
-    if (WiFi.status() != WL_CONNECTED) // Fixed typo here
+    if (WiFi.status() != WL_CONNECTED) 
     {
         if (Button(2, 0, "Connect").collidesWith(clickPos))
             AppRender::appOpened = "wifi";

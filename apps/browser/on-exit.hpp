@@ -6,6 +6,7 @@
 
 void BrowserApp::OnExit()
 {
+  Serial.print("Exit");
 }
 
 #endif

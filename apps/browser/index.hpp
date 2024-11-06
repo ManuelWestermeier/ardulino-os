@@ -16,14 +16,28 @@ namespace BrowserApp
     {
         void NoPage(Location loc);
         void Home(std::map<std::string, std::string>);
+        void BrowserView(std::map<std::string, std::string>);
+        void Tabs(std::map<std::string, std::string>);
     };
 
     std::function<void(Pos)> currentOnclickHandler = nullptr;
 
     std::vector<Route> routes = {
         // all routes
-        Route({RoutePart("home")}, Pages::Home),
+        Route({RoutePart("home", false)}, Pages::Home),
+        Route({RoutePart("tabs", false)}, Pages::Tabs),
+        Route({
+                  RoutePart("browser-view", false), // Static "browser-view" as a variable part
+                  RoutePart("secure", true),        // Variable for secure/unsecure
+                  RoutePart("version", true),       // Variable for version
+                  RoutePart("host", true),          // Variable for host
+                  RoutePart("port", true),          // Variable for port
+                  RoutePart("route", true)          // Variable for route
+              },
+              Pages::BrowserView // the callback function
+              ),
     };
+
     AppStateManager pages({RoutePart("home")}, routes, Pages::NoPage);
 
     namespace State
@@ -39,13 +53,19 @@ namespace BrowserApp
     void Scroll(signed char direction);
     void OnExit();
     void OnClick(Pos clickPos);
+    void Submit();
+    byte Start(const String &);
 };
 
 #include "./pages/no-page.hpp"
 #include "./pages/home.hpp"
+#include "./pages/tabs.hpp"
+#include "./pages/browser-view.hpp"
 
 #include "./update.hpp"
 #include "./scroll.hpp"
+#include "./submit.hpp"
+#include "./start.hpp"
 #include "./on-exit.hpp"
 #include "./on-click.hpp"
 

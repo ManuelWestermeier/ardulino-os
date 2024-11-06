@@ -24,5 +24,5 @@ function readDir(path) {
   return lines;
 }
 
-readDir("./");
+readDir(false ? "./" : "./apps/browser");
 fs.writeFileSync("the-codebase-in-one-file.txt", out, "utf-8");

@@ -2,10 +2,12 @@
 #define APPS_BROWSER_UPDATE_HPP
 
 #include "../../globals.hpp"
+#include "../../config.hpp"
 #include "./index.hpp"
 
 bool BrowserApp::WaitForConnected()
 {
+#ifndef DEBUG_HAS_WIFI
     static bool wasConnected;
     if (WiFi.status() != WL_CONNECTED)
     {
@@ -20,7 +22,7 @@ bool BrowserApp::WaitForConnected()
     {
         ClearAppScreen();
     }
-
+#endif
     return true;
 }
 
