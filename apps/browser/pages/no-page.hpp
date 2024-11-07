@@ -10,7 +10,7 @@ void BrowserApp::Pages::NoPage(Location loc)
 {
     ClearAppScreen();
     Text(1, 1, "Page Not Found").Draw();
-    Button(2, 0, "Home").Draw();
+    Button(2, 2, "Home").Draw();
     currentOnclickHandler = ([](Pos clickPos) { //
         if (Button(2, 0, "Home").collidesWith(clickPos))
             pages.Navigate({RoutePart("home")});

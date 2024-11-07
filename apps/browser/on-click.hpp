@@ -8,13 +8,15 @@
 
 void BrowserApp::OnClick(Pos clickPos)
 {
-    if (WiFi.status() != WL_CONNECTED) 
+#ifndef DEBUG_HAS_WIFI
+    if (WiFi.status() != WL_CONNECTED)
     {
         if (Button(2, 0, "Connect").collidesWith(clickPos))
             AppRender::appOpened = "wifi";
 
         return;
     }
+#endif
 
     if (currentOnclickHandler != nullptr)
         currentOnclickHandler(clickPos);

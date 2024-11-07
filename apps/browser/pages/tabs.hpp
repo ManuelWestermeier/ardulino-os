@@ -7,7 +7,7 @@
 #include "../../../utils/structs/clickable.hpp"
 #include "../../../utils/structs/input.hpp"
 
-void BrowserApp::Pages::Tabs(std::map<std::string, std::string>)
+void BrowserApp::Pages::Tabs(std::map<String, String>)
 {
     ClearAppScreen();
     Text(1, 1, "Tabs").Draw();

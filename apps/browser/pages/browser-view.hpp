@@ -7,7 +7,7 @@
 #include "../../../utils/structs/clickable.hpp"
 #include "../../../utils/structs/input.hpp"
 
-void BrowserApp::Pages::BrowserView(std::map<std::string, std::string>)
+void BrowserApp::Pages::BrowserView(std::map<String, String>)
 {
     ClearAppScreen();
     Text(1, 1, "Browser View").Draw();

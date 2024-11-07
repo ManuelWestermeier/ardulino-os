@@ -15,9 +15,9 @@ namespace BrowserApp
     namespace Pages
     {
         void NoPage(Location loc);
-        void Home(std::map<std::string, std::string>);
-        void BrowserView(std::map<std::string, std::string>);
-        void Tabs(std::map<std::string, std::string>);
+        void Home(std::map<String, String>);
+        void BrowserView(std::map<String, String>);
+        void Tabs(std::map<String, String>);
     };
 
     std::function<void(Pos)> currentOnclickHandler = nullptr;

@@ -9,10 +9,10 @@
 
 // create the elements
 Input goToViewInput(0, 0, 19, "website ip:port...", "192.168.178.33");
-Btn openTabsButton = Button(1, 2, "tabs");
-Btn openTabButton = Button(2, 2, "open tab");
+Btn openTabButton = Button(1, 2, "open tab");
+Btn openTabsButton = Button(2, 2, "tabs");
 
-void BrowserApp::Pages::Home(std::map<std::string, std::string>)
+void BrowserApp::Pages::Home(std::map<String, String>)
 {
     ClearAppScreen();
     // render the elements
