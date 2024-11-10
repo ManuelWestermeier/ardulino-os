@@ -27,6 +27,8 @@ public:
     int port = 61680;  // Default port
     String route = ""; // Default route is empty
 
+    MWPL() {}
+
     MWPL(const String &url)
     {
         parse(url);

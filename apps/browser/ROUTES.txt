@@ -1,0 +1,26 @@
+@[home]
+ [tabs]
+ [new tab]
+ [settings]
+
+@[tabs]
+ [Add New Tab]
+>Site 1 Title
+ Site 2 Title
+ ...
+
+@[browser-view][:secure][:version][host][port][route]
+<chnge url input>
+ Title [open]
+ [menage site]
+
+@[settings][pages][:host][:port]
+host:port
+ [Open Site]
+ [Delete Site Data]
+ [Edit Site Data]   
+
+@[site][:secure][:version][host][port][route]
+Conntent From The Server
+Conntent From The Server
+Conntent From The Server

@@ -7,6 +7,7 @@
 #include "../../utils/structs/text.hpp"
 #include "../../utils/structs/clickable.hpp"
 #include "../../utils/structs/input.hpp"
+#include "../../utils/structs/webview-data.hpp"
 #include "../../utils/structs/stored-map.hpp"
 #include "../../utils/structs/app-state-menager.hpp"
 
@@ -43,10 +44,12 @@ namespace BrowserApp
     namespace State
     {
         FlashHashMap webSiteData("web-site-data");
+        std::vector<WebviewData> webviews;
     }
 
     // helpers
     bool WaitForConnected();
+    void NewTab();
 
     // functions
     void Update();
@@ -68,5 +71,7 @@ namespace BrowserApp
 #include "./start.hpp"
 #include "./on-exit.hpp"
 #include "./on-click.hpp"
+
+#include "./new-tab.hpp" 
 
 #endif
