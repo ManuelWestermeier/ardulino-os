@@ -10,5 +10,7 @@
 void BrowserApp::Pages::BrowserView(std::map<String, String>)
 {
     ClearAppScreen();
+    
+
     Text(1, 1, "Browser View").Draw();
 }

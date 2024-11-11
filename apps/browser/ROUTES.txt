@@ -4,10 +4,9 @@
  [settings]
 
 @[tabs]
- [Add New Tab]
->Site 1 Title
- Site 2 Title
- ...
+ Site 1 Title
+>Site 2 Title
+ Site 3 Title
 
 @[browser-view][:secure][:version][host][port][route]
 <chnge url input>

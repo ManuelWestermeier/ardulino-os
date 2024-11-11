@@ -22,6 +22,7 @@ namespace BrowserApp
     };
 
     std::function<void(Pos)> currentOnclickHandler = nullptr;
+    std::function<void(signed char direction)> currentOnScrollHandler = nullptr;
 
     std::vector<Route> routes = {
         // all routes
@@ -72,6 +73,6 @@ namespace BrowserApp
 #include "./on-exit.hpp"
 #include "./on-click.hpp"
 
-#include "./new-tab.hpp" 
+#include "./new-tab.hpp"
 
 #endif

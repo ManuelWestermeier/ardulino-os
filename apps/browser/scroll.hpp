@@ -4,8 +4,10 @@
 #include "../../globals.hpp"
 #include "./index.hpp"
 
-void BrowserApp::Scroll(signed char direction) {
-  Serial.print(direction > 0 ? "Scroll UP" : "Scroll Down");
+void BrowserApp::Scroll(signed char direction)
+{
+  if (currentOnScrollHandler != nullptr)
+    currentOnScrollHandler(direction);
 }
 
 #endif
